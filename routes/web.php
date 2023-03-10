@@ -20,3 +20,4 @@ Route::get('/', function () {
 
 Route::get('/getSessionId', [LoginController::class, 'getSessionId']);
 Route::get('/getCookie', [LoginController::class, 'getCookie']);
+Route::get('/getHTML', [LoginController::class, 'getHTML']);
