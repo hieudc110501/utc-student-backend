@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use Illuminate\Http\Request;
 
+
 class LoginController extends Controller
 {
 
@@ -34,14 +35,13 @@ class LoginController extends Controller
         return $jar->toArray()[0]["Value"];
     }
 
-    public function getHTML() {
+    public function getHTML($username, $password, $page) {
         $client = new Client();
+
         $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
         $loginUrl = $originUrl . '/' . $this->getSessionId() . '/' . 'login.aspx';
-        $username = '191203659';
-        $password = 'datcuu99';
-        $page = 'StudyRegister/StudyRegister.aspx';
         $url = $originUrl . '/' . $this->getSessionId() . '/' . $page;
+
         $cookie = $this->getCookie($username, $password, $loginUrl);
         $response = $client->request('GET', $url, [
             'headers' => [
@@ -49,13 +49,9 @@ class LoginController extends Controller
                 'Cookie' => 'SignIn='. $cookie,
             ]
         ]);
-
         return $response->getBody();
 
-        //' '
     }
-
-
 }
 
 ?>
