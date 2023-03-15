@@ -15,12 +15,10 @@ class ScheduleController extends Controller
             if ($i === 0) {
                 return null;
             }
-
             // extract data from the row
             $cols = $row->filter('td')->each(function (Crawler $col, $j) {
                 return trim($col->text());
             });
-
             // skip empty rows
             if (empty($cols[0])) {
                 return null;
@@ -35,7 +33,7 @@ class ScheduleController extends Controller
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
-        $page = $request->input('page');
+        $page = 'StudyRegister/StudyRegister.aspx';
 
         $html = $login->getHTML($username, $password, $page);
         return $this->getSchedule($html);

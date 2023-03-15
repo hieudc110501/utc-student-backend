@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,3 +25,5 @@ Route::get('/getCookie', [LoginController::class, 'getCookie']);
 Route::get('/getHTML', [LoginController::class, 'getHTML']);
 
 Route::get('/getAllSchedule', [ScheduleController::class, 'getAllSchedule']);
+
+Route::get('/getStudent', [StudentController::class, 'getStudent']);
