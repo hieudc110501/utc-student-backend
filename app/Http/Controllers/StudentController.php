@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
+use Illuminate\Support\Facades\DB;
+use DateTime;
 
 class StudentController extends Controller
 {
@@ -20,19 +22,25 @@ class StudentController extends Controller
         $tel = $crawler->filter('input[name=txtDienThoaiCaNHAN]')->attr('value');
         $email = $crawler->filter('input[name=txtEmail]')->attr('value');
         //$rows = array_filter($rows);
-        return [
-            'firstName' => $firstName,
-            'lastName' => $lastName,
-            'gender' => $gender,
+
+        $date_str = "11/05/2001";
+        $date = DateTime::createFromFormat('d/m/Y', $date_str);
+        $date_formatted = $date->format('Y-m-d');
+
+        if(DB::table('student')->insert([
             'studentId' => $studentId,
-            'studentBankAccount' => $studentBankAccount,
-            'identityCard' => $identityCard,
-            'identityCard' => $identityCard,
-            'birth' => $birth,
-            'bornIn' => $bornIn,
+            'studentName' => $firstName . ' '. $lastName,
+            'bankAccount' => $studentBankAccount,
+            'identity' => $identityCard,
+            'birth' => $date_formatted,
             'tel' => $tel,
+            'bornIn' => $bornIn,
             'email' => $email,
-        ];
+            'gender'=> $gender,
+        ])) {
+            return true;
+        }
+        return false;
     }
 
     public function getStudent(Request $request) {
@@ -43,5 +51,24 @@ class StudentController extends Controller
 
         $html = $login->getHTML($username, $password, $page);
         return $this->parseStudentData($html);
+    }
+
+    public function checkLogged(Request $request) {
+        $login = new LoginController();
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $page = 'StudentProfileNew/HoSoSinhVien.aspx';
+
+        $check = DB::table('student')->where('studentId', '=', $username)->get();
+        if ($check->isNotEmpty()) {
+            return DB::table('student')->where('studentId', '=', $username)->first();
+        }
+        else {
+            $html = $login->getHTML($username, $password, $page);
+            if($this->parseStudentData($html)) {
+                return DB::table('student')->where('studentId', '=', $username)->get();
+            }
+            return 'Could not load';
+        }
     }
 }

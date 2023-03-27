@@ -52,6 +52,10 @@ class LoginController extends Controller
         return $response->getBody();
 
     }
+
+    public function checkLogged() {
+
+    }
 }
 
 ?>

@@ -9,7 +9,7 @@ use Symfony\Component\DomCrawler\Crawler;
 class ScheduleController extends Controller
 {
 
-    public function getSchedule($html) {
+    public function parseSchedule($html) {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#tblOtherCourseClass tr')->each(function ($row, $i) {
             if ($i === 0) {
@@ -26,7 +26,37 @@ class ScheduleController extends Controller
             return $cols;
         });
         $rows = array_filter($rows);
+        //return explode("đến",explode(":", explode("Từ", $rows['2']['4'])['1'])['0']);
         return $rows;
+
+    }
+
+    public function parseExam($html) {
+        $crawler = new Crawler($html);
+        // Find the select element with the name "hieu"
+        $select = $crawler->filter('select[name="drpSemester"]')->first();
+
+        // Find the option element with the value "123" and mark it as selected
+        $select->filter('option[value="6094472C669F4DABA4B37B0B24C5FCE2"]')->first()->attr('selected', 'selected');
+
+        var_dump($select);
+
+        $rows = $crawler->filter('#tblCourseList tr')->each(function ($row, $i) {
+            if ($i === 0) {
+                return null;
+            }
+            // extract data from the row
+            $cols = $row->filter('td')->each(function (Crawler $col, $j) {
+                return trim($col->text());
+            });
+            // skip empty rows
+            if (empty($cols[0])) {
+                return null;
+            }
+            return $cols;
+        });
+        $rows = array_filter($rows);
+        return $crawler->html();
     }
 
     public function getAllSchedule(Request $request) {
@@ -36,6 +66,17 @@ class ScheduleController extends Controller
         $page = 'StudyRegister/StudyRegister.aspx';
 
         $html = $login->getHTML($username, $password, $page);
-        return $this->getSchedule($html);
+        return $this->parseSchedule($html);
+    }
+
+    public function getExamSchedule(Request $request) {
+        $login = new LoginController();
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $page = 'StudentViewExamList.aspx';
+
+        $html = $login->getHTML($username, $password, $page);
+        return $html;
+        //return $this->parseExam($html);
     }
 }
