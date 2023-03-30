@@ -23,8 +23,7 @@ class StudentController extends Controller
         $email = $crawler->filter('input[name=txtEmail]')->attr('value');
         //$rows = array_filter($rows);
 
-        $date_str = "11/05/2001";
-        $date = DateTime::createFromFormat('d/m/Y', $date_str);
+        $date = DateTime::createFromFormat('d/m/Y', $birth);
         $date_formatted = $date->format('Y-m-d');
 
         if(DB::table('student')->insert([

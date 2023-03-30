@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
+use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
@@ -25,9 +26,30 @@ class ScheduleController extends Controller
             }
             return $cols;
         });
+
         $rows = array_filter($rows);
+
+        // lưu vào bảng StudentTerm
+        $studentTermId = DB::table('studentterm')->insertGetId([
+            'studentId' => '191413698',
+            'termId' => $rows['1']['4'],
+        ]);
+
+        // lưu các môn học ứng với từng sinh viên theo kì vào bảng
+        foreach ($rows as $value) {
+            if (DB::table('subject')->where('subjectName', '=', $value['1'])->first() == null) {
+                $subjectId = DB::table('subject')->insertGetId([
+                    'subjectName' => $value['1'],
+                ]);
+                echo $studentTermId . ' ' . $subjectId;
+                DB::table('studentsubjectterm')->insert([
+                    'studentTermId' => $studentTermId,
+                    'subjectId' => $subjectId,
+                ]);
+            }
+        }
         //return explode("đến",explode(":", explode("Từ", $rows['2']['4'])['1'])['0']);
-        return $rows;
+        //return $rows;
 
     }
 
