@@ -52,22 +52,7 @@ class StudentController extends Controller
         return $this->parseStudentData($html);
     }
 
-    public function checkLogged(Request $request) {
-        $login = new LoginController();
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $page = 'StudentProfileNew/HoSoSinhVien.aspx';
-
-        $check = DB::table('student')->where('studentId', '=', $username)->get();
-        if ($check->isNotEmpty()) {
-            return DB::table('student')->where('studentId', '=', $username)->first();
-        }
-        else {
-            $html = $login->getHTML($username, $password, $page);
-            if($this->parseStudentData($html)) {
-                return DB::table('student')->where('studentId', '=', $username)->get();
-            }
-            return 'Could not load';
-        }
+    public function getStudentDB($username) {
+        return DB::table('student')->where('studentId', '=', $username)->get();
     }
 }

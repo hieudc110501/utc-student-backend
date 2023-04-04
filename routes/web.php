@@ -25,13 +25,15 @@ Route::get('/getSessionId', [LoginController::class, 'getSessionId']);
 Route::get('/getCookie', [LoginController::class, 'getCookie']);
 Route::get('/getHTML', [LoginController::class, 'getHTML']);
 
+//controller
+Route::get('/checkLogged', [Controller::class, 'checkLogged']);
+
 //schedule
 Route::get('/getAllSchedule', [ScheduleController::class, 'getAllSchedule']);
 Route::get('/getExamSchedule', [ScheduleController::class, 'getExamSchedule']);
 
 //student
 Route::get('/getStudent', [StudentController::class, 'getStudent']);
-Route::get('/checkLogged', [StudentController::class, 'checkLogged']);
 
 //mark
 Route::get('/getMark', [MarkController::class, 'getMark']);

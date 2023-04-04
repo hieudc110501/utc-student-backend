@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Http\Controllers\LoginController;
-
+use DateTime;
 use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 class ScheduleController extends Controller
 {
 
-    public function parseSchedule($html) {
+    public function parseSchedule($html, $username) {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#tblOtherCourseClass tr')->each(function ($row, $i) {
             if ($i === 0) {
@@ -31,7 +31,7 @@ class ScheduleController extends Controller
 
         // lưu vào bảng StudentTerm
         $studentTermId = DB::table('studentterm')->insertGetId([
-            'studentId' => '191413698',
+            'studentId' => $username,
             'termId' => $rows['1']['4'],
         ]);
 
@@ -41,11 +41,54 @@ class ScheduleController extends Controller
                 $subjectId = DB::table('subject')->insertGetId([
                     'subjectName' => $value['1'],
                 ]);
-                echo $studentTermId . ' ' . $subjectId;
-                DB::table('studentsubjectterm')->insert([
+                $studentsubjecttermid = DB::table('studentsubjectterm')->insertGetId([
                     'studentTermId' => $studentTermId,
                     'subjectId' => $subjectId,
                 ]);
+                $listDate = explode("Từ", $value['2']);
+                foreach($listDate as $date) {
+
+                    if ($date != '') {
+                        $time = explode(":", $date);
+                        //tách lấy ngày bắt đầu và ngày kết thúc
+                        $day = $time[0];
+                        $startDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[0])));
+                        $endDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[1])));
+
+
+                        //tách lấy tiết học
+                        $lesson = explode("tiết", $time[1]);
+                        //nếu có tiết học thì lấy tiết học và ca
+                        if (sizeof($lesson) != 1) {
+                            $weekDay = trim($lesson[0])[strlen(trim($lesson[0]))-1];
+                            $ca = '1';
+                            if (str_contains($lesson[1], '1,2,3')) {
+                                $ca = '1';
+                            } else if (str_contains($lesson[1], '4,5,6')) {
+                                $ca = '2';
+                            } else if (str_contains($lesson[1], '7,8,9')) {
+                                $ca = '3';
+                            } else if (str_contains($lesson[1], '10,11,12')) {
+                                $ca = '4';
+                            }
+                            DB::table('subjectdetail')->insert([
+                                'studentSubjectTermId' => $studentsubjecttermid,
+                                'startDay' => $startDay,
+                                'endDay' => $endDay,
+                                'lesson' => $ca,
+                                'weekday' => $weekDay,
+                            ]);
+                        } else {
+                            // không có tiết học thì chỉ lấy ngày
+                            DB::table('subjectdetail')->insert([
+                                'studentSubjectTermId' => $studentsubjecttermid,
+                                'startDay' => $startDay,
+                                'endDay' => $endDay,
+                            ]);
+                        }
+                        //return $beginDay;
+                    }
+                }
             }
         }
         //return explode("đến",explode(":", explode("Từ", $rows['2']['4'])['1'])['0']);
@@ -88,7 +131,7 @@ class ScheduleController extends Controller
         $page = 'StudyRegister/StudyRegister.aspx';
 
         $html = $login->getHTML($username, $password, $page);
-        return $this->parseSchedule($html);
+        return $this->parseSchedule($html, $username);
     }
 
     public function getExamSchedule(Request $request) {
