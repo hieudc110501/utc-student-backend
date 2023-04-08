@@ -21,6 +21,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/getDB', [Controller::class, 'getDB']);
 
+//post login
+Route::get('/postLogin', [LoginController::class, 'postLogin']);
+
+//
 Route::get('/getSessionId', [LoginController::class, 'getSessionId']);
 Route::get('/getCookie', [LoginController::class, 'getCookie']);
 Route::get('/getHTML', [LoginController::class, 'getHTML']);
