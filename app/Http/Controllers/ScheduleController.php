@@ -91,6 +91,7 @@ class ScheduleController extends Controller
                 }
             }
         }
+        return true;
         //return explode("đến",explode(":", explode("Từ", $rows['2']['4'])['1'])['0']);
         //return $rows;
 
@@ -143,5 +144,26 @@ class ScheduleController extends Controller
         $html = $login->getHTML($username, $password, $page);
         return $html;
         //return $this->parseExam($html);
+    }
+
+    public function getScheduleByUsername($username) {
+        $studentTermId = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
+        $allStudentSubjectTermId = DB::table('studentsubjectterm')->where('studentTermId', $studentTermId)->get();
+        $arr = json_decode($allStudentSubjectTermId, true);
+        $studentSubjectTermIds = array();
+
+        foreach ($arr as $item) {
+            $studentSubjectTermIds[] = $item['studentSubjectTermId'];
+            $allSubjectDetail[] = DB::table('subjectdetail')->where('studentSubjectTermId', $item['studentSubjectTermId'])->get();
+        }
+        // return json_encode($allSubjectDetail[0]);
+        $jsonArray = [];
+
+        foreach ($allSubjectDetail as $innerArray) {
+            foreach ($innerArray as $jsonObject) {
+                array_push($jsonArray, $jsonObject);
+            }
+        }
+        return $jsonArray;
     }
 }

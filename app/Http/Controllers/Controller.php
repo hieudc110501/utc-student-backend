@@ -10,11 +10,12 @@ use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
-    public function checkLogged(Request $request) {
+    public function fetchData(Request $request) {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
-        $page = 'StudentProfileNew/HoSoSinhVien.aspx';
+        $pageStudent = 'StudentProfileNew/HoSoSinhVien.aspx';
+        $pageSchedule = 'StudyRegister/StudyRegister.aspx';
 
         $check = DB::table('student')->where('studentId', '=', $username)->get();
         if ($check->isNotEmpty()) {
@@ -23,8 +24,18 @@ class Controller extends BaseController
         else {
             $student = new StudentController();
             $schedule = new ScheduleController();
-            $html = $login->getHTML($username, $password, $page);
-            $student->parseStudentData($html);
+            $html = $login->getHTML($username, $password, $pageStudent);
+            $check = $student->parseStudentData($html);
+
+            //schedule
+            $html1 = $login->getHTML($username, $password, $pageSchedule);
+            $check1 = $schedule->parseSchedule($html1, $username);
+
+            if ($check && $check1) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }

@@ -52,7 +52,7 @@ class StudentController extends Controller
         return $this->parseStudentData($html);
     }
 
-    public function getStudentDB($username) {
-        return DB::table('student')->where('studentId', '=', $username)->get();
+    public function getStudentByUsername($username) {
+        return DB::table('student')->where('studentId', '=', $username)->first();
     }
 }
