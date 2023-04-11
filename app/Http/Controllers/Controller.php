@@ -16,6 +16,7 @@ class Controller extends BaseController
         $password = $request->input('password');
         $pageStudent = 'StudentProfileNew/HoSoSinhVien.aspx';
         $pageSchedule = 'StudyRegister/StudyRegister.aspx';
+        $pageMark = 'StudentMark.aspx';
 
         $check = DB::table('student')->where('studentId', '=', $username)->get();
         if ($check->isNotEmpty()) {
