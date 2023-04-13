@@ -90,7 +90,6 @@ class MarkController extends Controller
                 } else {
                     //kiểm tra số lần học
                     $getTimes = $check = DB::table('studentModule')->where('moduleId', $row[1])->where('studentId', $username)->value('times');
-
                 }
             }
         }
@@ -115,5 +114,14 @@ class MarkController extends Controller
 
         $html = $login->getHTML($username, $password, $page);
         return $this->parseMarkSubjectData($html, $username);
+    }
+
+    public function fetchMark($username) {
+        $query = "select studentmodule.moduleId, m.moduleName, m.moduleCredit , studentmodule.times, t.DQT, t.THI, t.TKHP FROM studentmodule JOIN times t ON studentmodule.studentModuleId = t.studentModuleId JOIN module m ON studentmodule.moduleId = m.moduleId WHERE studentId=$username";
+        return DB::table('module')
+        ->join('studentmodule', 'studentmodule.moduleId', '=', 'module.moduleId')
+        ->join('times', 'times.studentModuleId', '=', 'studentmodule.studentModuleId')
+        ->where('studentId', '=', $username)
+        ->get();
     }
 }

@@ -43,6 +43,8 @@ Route::get('/getStudentByUsername/{username}', [StudentController::class, 'getSt
 //mark
 Route::get('/getMark', [MarkController::class, 'getMark']);
 Route::get('/getSubjectMark', [MarkController::class, 'getSubjectMark']);
+Route::get('/fetchMark/{id}', [MarkController::class, 'fetchMark']);
+
 
 //tuition
 Route::get('/getTuitionPaid', [TuitionController::class, 'getTuitionPaid']);
