@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 class ScheduleController extends Controller
 {
 
+    // tách dữ liệu lịch học
     public function parseSchedule($html, $username) {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#tblOtherCourseClass tr')->each(function ($row, $i) {
@@ -97,15 +98,57 @@ class ScheduleController extends Controller
 
     }
 
+    public function parseScheduleTest($html, $username) {
+        $crawler = new Crawler($html);
+        $rows = $crawler->filter('#gridRegistered tr')->each(function ($row, $i) {
+            if ($i === 0) {
+                return null;
+            }
+            // extract data from the row
+            $cols = $row->filter('td')->each(function (Crawler $col, $j) {
+                return trim($col->text());
+            });
+            // skip empty rows
+            if (empty($cols[0])) {
+                return null;
+            }
+            return $cols;
+        });
+
+        $rows = array_filter($rows);
+
+        // // lưu vào bảng StudentTerm
+        // $studentTermId = DB::table('studentterm')->insertGetId([
+        //     'studentId' => $username,
+        //     'termId' => $rows['1']['4'],
+        // ]);
+        return $rows;
+        // lưu các môn học ứng với từng sinh viên theo kì vào bảng
+        foreach ($rows as $value) {
+
+            $checkLop = explode(".", $value['1']);
+            if (sizeof($checkLop) == 2 ) {
+                echo $checkLop[1];
+            }
+            // $listDate = explode("Từ", $value['4']);
+            // $listLocation = explode("(", $value['5']);
+            // return $listLocation;
+            // return $listDate;
+            // foreach($listDate as $date) {
+            //     return $date;
+            // }
+        }
+        //return true;
+        //return explode("đến",explode(":", explode("Từ", $rows['2']['4'])['1'])['0']);
+        //return $rows;
+
+    }
+
+    // tách lấy dữ liệu lịch thi
     public function parseExam($html) {
         $crawler = new Crawler($html);
         // Find the select element with the name "hieu"
         $select = $crawler->filter('select[name="drpSemester"]')->first();
-
-        // Find the option element with the value "123" and mark it as selected
-        $select->filter('option[value="6094472C669F4DABA4B37B0B24C5FCE2"]')->first()->attr('selected', 'selected');
-
-        var_dump($select);
 
         $rows = $crawler->filter('#tblCourseList tr')->each(function ($row, $i) {
             if ($i === 0) {
@@ -122,30 +165,34 @@ class ScheduleController extends Controller
             return $cols;
         });
         $rows = array_filter($rows);
-        return $crawler->html();
+        return $rows;
     }
 
+    //request lấy lịch học
     public function getAllSchedule(Request $request) {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
-        $page = 'StudyRegister/StudyRegister.aspx';
+        $page = 'Reports/Form/StudentTimeTable.aspx';
 
-        $html = $login->getHTML($username, $password, $page);
-        return $this->parseSchedule($html, $username);
+        $termValue = DB::table('term')->where('termName', '=', '2_2022_2023')->value('termValue');
+        $html = $login->getScheduleHTML($username, $password, $page, $termValue);
+        return $this->parseScheduleTest($html, $username);
     }
 
+    //request lấy lịch thi
     public function getExamSchedule(Request $request) {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
         $page = 'StudentViewExamList.aspx';
 
-        $html = $login->getHTML($username, $password, $page);
-        return $html;
-        //return $this->parseExam($html);
+        $termValue = DB::table('term')->where('termName', '=', '1_2022_2023')->value('termValue');
+        $html = $login->getExamHTML($username, $password, $page, $termValue);
+        return $this->parseExam($html);
     }
 
+    //lấy lịch học theo msv
     public function getScheduleByUsername($username) {
         $studentTermId = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
         $allStudentSubjectTermId = DB::table('studentsubjectterm')->where('studentTermId', $studentTermId)->get();
@@ -165,5 +212,16 @@ class ScheduleController extends Controller
             }
         }
         return $jsonArray;
+    }
+
+    //lấy lịch học theo msv
+    public function fetchSchedule($username) {
+        $query = "select studentmodule.moduleId, m.moduleName, m.moduleCredit , studentmodule.times, t.DQT, t.THI, t.TKHP FROM studentmodule JOIN times t ON studentmodule.studentModuleId = t.studentModuleId JOIN module m ON studentmodule.moduleId = m.moduleId WHERE studentId=$username";
+        return DB::table('studentterm')
+        ->join('studentsubjectterm', 'studentterm.studentTermId', '=', 'studentsubjectterm.studentTermId')
+        ->join('subjectdetail', 'studentsubjectterm.studentSubjectTermId', '=', 'subjectdetail.studentSubjectTermId')
+        ->join('subject', 'subject.subjectId', '=', 'studentsubjectterm.subjectId')
+        ->where('studentterm.studentId', '=', $username)
+        ->get();
     }
 }

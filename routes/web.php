@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/getDB', [Controller::class, 'getDB']);
+
+//get exam html
+Route::get('/getExamHTML', [LoginController::class, 'getExamHTML']);
 
 //post login
 Route::get('/postLogin', [LoginController::class, 'postLogin']);
@@ -36,6 +38,7 @@ Route::get('/fetchData', [Controller::class, 'fetchData']);
 Route::get('/getAllSchedule', [ScheduleController::class, 'getAllSchedule']);
 Route::get('/getExamSchedule', [ScheduleController::class, 'getExamSchedule']);
 Route::get('/getScheduleByUsername/{id}', [ScheduleController::class, 'getScheduleByUsername']);
+Route::get('/fetchSchedule/{id}', [ScheduleController::class, 'fetchSchedule']);
 
 //student
 Route::get('/getStudentByUsername/{username}', [StudentController::class, 'getStudentByUsername']);

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Term extends Model
 {
-    protected $fillable = ['termName'];
+    protected $fillable = ['termName', 'termValue'];
 
     protected $primarkey =  'termId';
     protected $table = 'term';
