@@ -116,31 +116,61 @@ class ScheduleController extends Controller
         });
 
         $rows = array_filter($rows);
-        return $rows;
-        // // lưu vào bảng StudentTerm
-        // $studentTermId = DB::table('studentterm')->insertGetId([
-        //     'studentId' => $username,
-        //     'termId' => $rows['1']['4'],
-        // ]);
-
-        // lưu các môn học ứng với từng sinh viên theo kì vào bảng
         foreach ($rows as $value) {
-
-            $checkLop = explode(".", $value['1']);
-            if (sizeof($checkLop) == 2 ) {
-                echo $checkLop[1];
+            $listDate = explode("Từ", $value['3']);
+            $listLocation = array_filter(explode("(", $value['4']));
+            $arrayLocal = array();
+            foreach($listLocation as $local) {
+                $local1 = explode(")", $local);
+                $local2 = explode(",", $local1[0]);
+                foreach ($local2 as $lc) {
+                    array_push($arrayLocal, $local1[1]);
+                }
             }
-            // $listDate = explode("Từ", $value['4']);
-            // $listLocation = explode("(", $value['5']);
-            // return $listLocation;
-            // return $listDate;
-            // foreach($listDate as $date) {
-            //     return $date;
-            // }
+            $index = 0;
+            foreach($listDate as $date) {
+                if ($date != '') {
+                    $time = explode(":", $date);
+                    //tách lấy ngày bắt đầu và ngày kết thúc
+                    $day = $time[0];
+                    $startDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[0])));
+                    $endDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[1])));
+
+                    $weekday = explode("Thứ ", $time[1]);
+                    $i = 1;
+                    foreach($weekday as $week) {
+                        //tách lấy tiết học
+                        if ($week[0] != ' ') {
+                            $t = $week[0];
+                            if (sizeof($weekday) > 2) {
+                                $thu = array_filter(explode("[", $arrayLocal[$index]));
+                                echo $startDay . ' ' . $endDay . ' ' . $t . ' ' . explode("] ", $thu[$i])[1];
+                                $i++;
+                            } else {
+                                echo $startDay . ' ' . $endDay . ' ' . $t . ' ' . $arrayLocal[$index];
+                            }
+                            if (str_contains($week, '1,2,3')) {
+                                $ca = '1';
+                                echo ' ' . $ca;
+                            } else if (str_contains($week, '4,5,6')) {
+                                $ca = '2';
+                                echo ' ' . $ca;
+                            } else if (str_contains($week, '7,8,9')) {
+                                $ca = '3';
+                                echo ' ' . $ca;
+                            } else if (str_contains($week, '10,11,12')) {
+                                $ca = '4';
+                                echo ' ' . $ca;
+                            }
+                            echo "\n";
+                        }
+
+                    }
+                    $index++;
+                }
+            }
+            return 'ok';
         }
-        //return true;
-        //return explode("đến",explode(":", explode("Từ", $rows['2']['4'])['1'])['0']);
-        //return $rows;
 
     }
 
@@ -176,7 +206,7 @@ class ScheduleController extends Controller
         $page = 'Reports/Form/StudentTimeTable.aspx';
 
 
-        $termValue = DB::table('term')->where('termName', '=', '2_2021_2022')->value('termValue');
+        $termValue = DB::table('term')->where('termName', '=', '2_2020_2021')->value('termValue');
         $html = $login->getScheduleHTML($username, $password, $page, $termValue);
         return $this->parseScheduleTest($html, $username);
     }
