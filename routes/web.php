@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 
 //get exam html
 Route::get('/getExamHTML', [LoginController::class, 'getExamHTML']);
+Route::get('/getScheduleHTMLTest', [LoginController::class, 'getScheduleHTMLTest']);
+
 
 //post login
 Route::get('/postLogin', [LoginController::class, 'postLogin']);

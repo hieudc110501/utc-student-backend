@@ -116,13 +116,13 @@ class ScheduleController extends Controller
         });
 
         $rows = array_filter($rows);
-
+        return $rows;
         // // lưu vào bảng StudentTerm
         // $studentTermId = DB::table('studentterm')->insertGetId([
         //     'studentId' => $username,
         //     'termId' => $rows['1']['4'],
         // ]);
-        return $rows;
+
         // lưu các môn học ứng với từng sinh viên theo kì vào bảng
         foreach ($rows as $value) {
 
@@ -148,7 +148,7 @@ class ScheduleController extends Controller
     public function parseExam($html) {
         $crawler = new Crawler($html);
         // Find the select element with the name "hieu"
-        $select = $crawler->filter('select[name="drpSemester"]')->first();
+        //$select = $crawler->filter('select[name="drpSemester"]')->first();
 
         $rows = $crawler->filter('#tblCourseList tr')->each(function ($row, $i) {
             if ($i === 0) {
@@ -175,7 +175,8 @@ class ScheduleController extends Controller
         $password = $request->input('password');
         $page = 'Reports/Form/StudentTimeTable.aspx';
 
-        $termValue = DB::table('term')->where('termName', '=', '2_2022_2023')->value('termValue');
+
+        $termValue = DB::table('term')->where('termName', '=', '2_2021_2022')->value('termValue');
         $html = $login->getScheduleHTML($username, $password, $page, $termValue);
         return $this->parseScheduleTest($html, $username);
     }
