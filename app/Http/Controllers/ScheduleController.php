@@ -116,62 +116,78 @@ class ScheduleController extends Controller
         });
 
         $rows = array_filter($rows);
+        unset($rows[sizeof($rows)]);
+
         foreach ($rows as $value) {
-            $listDate = explode("Từ", $value['3']);
-            $listLocation = array_filter(explode("(", $value['4']));
-            $arrayLocal = array();
-            foreach($listLocation as $local) {
-                $local1 = explode(")", $local);
-                $local2 = explode(",", $local1[0]);
-                foreach ($local2 as $lc) {
-                    array_push($arrayLocal, $local1[1]);
-                }
+            $mon = trim($value['2']);
+            $string1 = trim($value['3']);
+            $string = trim($value['4']);
+
+            // lấy địa điểm học
+            $array = array();
+            if (str_contains($string, "(1)")) {
+                $list = explode("(1)", $string);
+                $string = $list[1];
             }
+            if (str_contains($string, "(1,2)")) {
+                $list = explode("(1,2)", $string);
+                $string = $list[1];
+            }
+            if (str_contains($string, "(2)")) {
+                $list = explode("(2)", $string);
+                array_push($array, $list[0]);
+                $string = $list[1];
+            }
+            if (str_contains($string, "(2,3)")) {
+                $list = explode("(2,3)", $string);
+                array_push($array, $list[0]);
+                $string = $list[1];
+            }
+            if (str_contains($string, "(3)")) {
+                $list = explode("(3)", $string);
+                array_push($array, $list[0]);
+                $string = $list[1];
+            }
+            if (sizeof($array) == 0) {
+                array_push($array, $string);
+            } else {
+                array_push($array, $list[1]);
+            }
+
+            // lấy thứ và tiết
+            $listDay = array_filter(explode("Từ", trim($string1)));
+            //var_dump($listDay);
             $index = 0;
-            foreach($listDate as $date) {
-                if ($date != '') {
-                    $time = explode(":", $date);
-                    //tách lấy ngày bắt đầu và ngày kết thúc
-                    $day = $time[0];
-                    $startDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[0])));
-                    $endDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[1])));
+            foreach ($listDay as $listd) {
+                $time = explode(":", $listd);
+                //tách lấy ngày bắt đầu và ngày kết thúc
+                $day = $time[0];
+                $startDay = date("Y-m-d", strtotime(str_replace('/', '-',trim(explode("đến", $day)[0]))));
+                $endDay = date("Y-m-d", strtotime(str_replace('/', '-',trim(explode("đến", $day)[1]))));
 
-                    $weekday = explode("Thứ ", $time[1]);
-                    $i = 1;
-                    foreach($weekday as $week) {
-                        //tách lấy tiết học
-                        if ($week[0] != ' ') {
-                            $t = $week[0];
-                            if (sizeof($weekday) > 2) {
-                                $thu = array_filter(explode("[", $arrayLocal[$index]));
-                                echo $startDay . ' ' . $endDay . ' ' . $t . ' ' . explode("] ", $thu[$i])[1];
-                                $i++;
-                            } else {
-                                echo $startDay . ' ' . $endDay . ' ' . $t . ' ' . $arrayLocal[$index];
-                            }
-                            if (str_contains($week, '1,2,3')) {
-                                $ca = '1';
-                                echo ' ' . $ca;
-                            } else if (str_contains($week, '4,5,6')) {
-                                $ca = '2';
-                                echo ' ' . $ca;
-                            } else if (str_contains($week, '7,8,9')) {
-                                $ca = '3';
-                                echo ' ' . $ca;
-                            } else if (str_contains($week, '10,11,12')) {
-                                $ca = '4';
-                                echo ' ' . $ca;
-                            }
-                            echo "\n";
+                $listThu = explode("Thứ", $time[1]);
+                if (sizeof($listThu) == 1) {
+                    var_dump($mon . ' ' . $startDay . ' ' . $endDay . ' ' . 'null' . ' ' . 'null' . ' ' . 'null');
+                } else {
+                    unset($listThu[0]);
+                    foreach ($listThu as $listt) {
+                        $listTiet = explode("tiết", $listt);
+                        $ca = '1';
+                        if (str_contains($listTiet[1], '1,2,3')) {
+                            $ca = '1';
+                        } else if (str_contains($listTiet[1], '4,5,6')) {
+                            $ca = '2';
+                        } else if (str_contains($listTiet[1], '7,8,9')) {
+                            $ca = '3';
+                        } else if (str_contains($listTiet[1], '10,11,12')) {
+                            $ca = '4';
                         }
-
+                        var_dump($mon . ' ' . $startDay . ' ' . $endDay . ' ' . trim($listTiet[0]) . ' ' . $ca . ' ' . $array[$index]);
                     }
-                    $index++;
                 }
+                sizeof($array)-1 > $index ? $index++ : $index;
             }
-            return 'ok';
         }
-
     }
 
     // tách lấy dữ liệu lịch thi
