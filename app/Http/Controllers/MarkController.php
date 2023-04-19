@@ -93,10 +93,10 @@ class MarkController extends Controller
                 }
             }
         }
-        return true;
+        return response()->json(null, 204);
     }
 
-    public function getMark(Request $request) {
+    public function insert(Request $request) {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');

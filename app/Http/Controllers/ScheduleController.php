@@ -10,95 +10,8 @@ use Illuminate\Support\Facades\DB;
 class ScheduleController extends Controller
 {
 
-    // tách dữ liệu lịch học
+    //tách dữ liệu lấy lịch học
     public function parseSchedule($html, $username) {
-        $crawler = new Crawler($html);
-        $rows = $crawler->filter('#tblOtherCourseClass tr')->each(function ($row, $i) {
-            if ($i === 0) {
-                return null;
-            }
-            // extract data from the row
-            $cols = $row->filter('td')->each(function (Crawler $col, $j) {
-                return trim($col->text());
-            });
-            // skip empty rows
-            if (empty($cols[0])) {
-                return null;
-            }
-            return $cols;
-        });
-
-        $rows = array_filter($rows);
-
-        // lưu vào bảng StudentTerm
-        $studentTermId = DB::table('studentterm')->insertGetId([
-            'studentId' => $username,
-            'termId' => $rows['1']['4'],
-        ]);
-
-        // lưu các môn học ứng với từng sinh viên theo kì vào bảng
-        foreach ($rows as $value) {
-            if (DB::table('subject')->where('subjectName', '=', $value['1'])->first() == null) {
-                $subjectId = DB::table('subject')->insertGetId([
-                    'subjectName' => $value['1'],
-                ]);
-                $studentsubjecttermid = DB::table('studentsubjectterm')->insertGetId([
-                    'studentTermId' => $studentTermId,
-                    'subjectId' => $subjectId,
-                ]);
-                $listDate = explode("Từ", $value['2']);
-                foreach($listDate as $date) {
-
-                    if ($date != '') {
-                        $time = explode(":", $date);
-                        //tách lấy ngày bắt đầu và ngày kết thúc
-                        $day = $time[0];
-                        $startDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[0])));
-                        $endDay = date("Y-m-d", strtotime(str_replace('/', '-',explode("đến", $day)[1])));
-
-
-                        //tách lấy tiết học
-                        $lesson = explode("tiết", $time[1]);
-                        //nếu có tiết học thì lấy tiết học và ca
-                        if (sizeof($lesson) != 1) {
-                            $weekDay = trim($lesson[0])[strlen(trim($lesson[0]))-1];
-                            $ca = '1';
-                            if (str_contains($lesson[1], '1,2,3')) {
-                                $ca = '1';
-                            } else if (str_contains($lesson[1], '4,5,6')) {
-                                $ca = '2';
-                            } else if (str_contains($lesson[1], '7,8,9')) {
-                                $ca = '3';
-                            } else if (str_contains($lesson[1], '10,11,12')) {
-                                $ca = '4';
-                            }
-                            DB::table('subjectdetail')->insert([
-                                'studentSubjectTermId' => $studentsubjecttermid,
-                                'startDay' => $startDay,
-                                'endDay' => $endDay,
-                                'lesson' => $ca,
-                                'weekday' => $weekDay,
-                            ]);
-                        } else {
-                            // không có tiết học thì chỉ lấy ngày
-                            DB::table('subjectdetail')->insert([
-                                'studentSubjectTermId' => $studentsubjecttermid,
-                                'startDay' => $startDay,
-                                'endDay' => $endDay,
-                            ]);
-                        }
-                        //return $beginDay;
-                    }
-                }
-            }
-        }
-        return true;
-        //return explode("đến",explode(":", explode("Từ", $rows['2']['4'])['1'])['0']);
-        //return $rows;
-
-    }
-
-    public function parseScheduleTest($html, $username) {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#gridRegistered tr')->each(function ($row, $i) {
             if ($i === 0) {
@@ -115,11 +28,17 @@ class ScheduleController extends Controller
             return $cols;
         });
 
+        $id = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
+        if (!$id) {
+            return response()->json(null, 400);
+        }
+
         $rows = array_filter($rows);
         unset($rows[sizeof($rows)]);
 
         foreach ($rows as $value) {
-            $mon = trim($value['2']);
+            $subjectName = trim($value['1']);
+            $subjectId = trim($value['2']);
             $string1 = trim($value['3']);
             $string = trim($value['4']);
 
@@ -167,7 +86,17 @@ class ScheduleController extends Controller
 
                 $listThu = explode("Thứ", $time[1]);
                 if (sizeof($listThu) == 1) {
-                    var_dump($mon . ' ' . $startDay . ' ' . $endDay . ' ' . 'null' . ' ' . 'null' . ' ' . 'null');
+                    $check = DB::table('subjectdetail')->insert([
+                        'studentTermId' => $id,
+                        'subjectId' => $subjectId,
+                        'subjectName' => $subjectName,
+                        'startDay' => $startDay,
+                        'endDay' => $endDay,
+                    ]);
+                    if (!$check) {
+                        return response()->json(null, 400);
+                    }
+                    //var_dump($subjectId . ' ' . $startDay . ' ' . $endDay . ' ' . 'null' . ' ' . 'null' . ' ' . 'null');
                 } else {
                     unset($listThu[0]);
                     foreach ($listThu as $listt) {
@@ -182,11 +111,61 @@ class ScheduleController extends Controller
                         } else if (str_contains($listTiet[1], '10,11,12')) {
                             $ca = '4';
                         }
-                        var_dump($mon . ' ' . $startDay . ' ' . $endDay . ' ' . trim($listTiet[0]) . ' ' . $ca . ' ' . $array[$index]);
+                        $check = DB::table('subjectdetail')->insert([
+                            'studentTermId' => $id,
+                            'subjectId' => $subjectId,
+                            'subjectName' => $subjectName,
+                            'startDay' => $startDay,
+                            'endDay' => $endDay,
+                            'weekDay' => (int) trim($listTiet[0]),
+                            'lesson' => (int) trim($ca),
+                            'location' => $array[$index],
+                        ]);
+                        if (!$check) {
+                            return response()->json(null, 400);
+                        }
+                        //var_dump($subjectId . ' ' . $startDay . ' ' . $endDay . ' ' . trim($listTiet[0]) . ' ' . $ca . ' ' . $array[$index]);
                     }
                 }
                 sizeof($array)-1 > $index ? $index++ : $index;
             }
+        }
+        return response()->json(null, 204);
+    }
+
+    //insert schedule
+    public function insert(Request $request) {
+        $login = new LoginController();
+        $username = $request->input('username');
+        $password = $request->input('password');
+
+        $page = 'Reports/Form/StudentTimeTable.aspx';
+
+        $termId = DB::table('studentterm')->where('studentId', $username)->value('termId');
+        $termValue = DB::table('term')->where('termId', $termId)->value('termValue');
+        $html = $login->getScheduleHTML($username, $password, $page, $termValue);
+        return $this->parseSchedule($html, $username);
+    }
+
+    //get schedule
+    public function get($username) {
+        $studentTermId = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
+        $check = DB::table('subjectdetail')->where('studentTermId', $studentTermId)->get();
+        if ($check) {
+            return response()->json($check, 200);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
+
+    //delete schedule
+    public function delete($username) {
+        $studentTermId = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
+        $check = DB::table('subjectdetail')->where('studentTermId', $studentTermId)->delete();
+        if ($check) {
+            return response()->json(null, 204);
+        } else {
+            return response()->json(null, 400);
         }
     }
 
@@ -214,19 +193,6 @@ class ScheduleController extends Controller
         return $rows;
     }
 
-    //request lấy lịch học
-    public function getAllSchedule(Request $request) {
-        $login = new LoginController();
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $page = 'Reports/Form/StudentTimeTable.aspx';
-
-
-        $termValue = DB::table('term')->where('termName', '=', '2_2020_2021')->value('termValue');
-        $html = $login->getScheduleHTML($username, $password, $page, $termValue);
-        return $this->parseScheduleTest($html, $username);
-    }
-
     //request lấy lịch thi
     public function getExamSchedule(Request $request) {
         $login = new LoginController();
@@ -239,36 +205,4 @@ class ScheduleController extends Controller
         return $this->parseExam($html);
     }
 
-    //lấy lịch học theo msv
-    public function getScheduleByUsername($username) {
-        $studentTermId = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
-        $allStudentSubjectTermId = DB::table('studentsubjectterm')->where('studentTermId', $studentTermId)->get();
-        $arr = json_decode($allStudentSubjectTermId, true);
-        $studentSubjectTermIds = array();
-
-        foreach ($arr as $item) {
-            $studentSubjectTermIds[] = $item['studentSubjectTermId'];
-            $allSubjectDetail[] = DB::table('subjectdetail')->where('studentSubjectTermId', $item['studentSubjectTermId'])->get();
-        }
-        // return json_encode($allSubjectDetail[0]);
-        $jsonArray = [];
-
-        foreach ($allSubjectDetail as $innerArray) {
-            foreach ($innerArray as $jsonObject) {
-                array_push($jsonArray, $jsonObject);
-            }
-        }
-        return $jsonArray;
-    }
-
-    //lấy lịch học theo msv
-    public function fetchSchedule($username) {
-        $query = "select studentmodule.moduleId, m.moduleName, m.moduleCredit , studentmodule.times, t.DQT, t.THI, t.TKHP FROM studentmodule JOIN times t ON studentmodule.studentModuleId = t.studentModuleId JOIN module m ON studentmodule.moduleId = m.moduleId WHERE studentId=$username";
-        return DB::table('studentterm')
-        ->join('studentsubjectterm', 'studentterm.studentTermId', '=', 'studentsubjectterm.studentTermId')
-        ->join('subjectdetail', 'studentsubjectterm.studentSubjectTermId', '=', 'subjectdetail.studentSubjectTermId')
-        ->join('subject', 'subject.subjectId', '=', 'studentsubjectterm.subjectId')
-        ->where('studentterm.studentId', '=', $username)
-        ->get();
-    }
 }

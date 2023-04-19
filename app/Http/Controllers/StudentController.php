@@ -26,7 +26,7 @@ class StudentController extends Controller
         $date = DateTime::createFromFormat('d/m/Y', $birth);
         $date_formatted = $date->format('Y-m-d');
 
-        if(DB::table('student')->insert([
+        $check = DB::table('student')->insert([
             'studentId' => $studentId,
             'studentName' => $firstName . ' '. $lastName,
             'bankAccount' => $studentBankAccount,
@@ -36,13 +36,17 @@ class StudentController extends Controller
             'bornIn' => $bornIn,
             'email' => $email,
             'gender'=> $gender,
-        ])) {
-            return true;
+        ]);
+
+        if ($check) {
+            return response()->json(null, 204);
+        } else {
+            return response()->json(null, 400);
         }
-        return false;
     }
 
-    public function getStudent(Request $request) {
+    //insert
+    public function insert(Request $request) {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
@@ -52,7 +56,23 @@ class StudentController extends Controller
         return $this->parseStudentData($html);
     }
 
-    public function getStudentByUsername($username) {
-        return DB::table('student')->where('studentId', '=', $username)->first();
+    //get
+    public function get($username) {
+        $check = DB::table('student')->where('studentId', '=', $username)->first();
+        if ($check) {
+            return response()->json($check, 200);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
+
+    //delete
+    public function delete($username) {
+        $check = DB::table('student')->where('studentId', '=', $username)->delete();
+        if ($check) {
+            return response()->json(null, 204);
+        } else {
+            return response()->json(null, 400);
+        }
     }
 }

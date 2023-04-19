@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SubjectDetail extends Model
 {
-    protected $fillable = ['studentSubjectTermId', 'startDay', 'endDay', 'lesson', 'weekday'];
+    protected $fillable = ['studentTermId', 'subjectId', 'subjectName' , 'startDay', 'endDay', 'lesson', 'weekday'];
 
     protected $primarkey =  'subjectdetailId';
     protected $table = 'subjectdetail';

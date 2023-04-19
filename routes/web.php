@@ -5,52 +5,36 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MarkController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\TermController;
 use App\Http\Controllers\TuitionController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
-
-//get exam html
-Route::get('/getExamHTML', [LoginController::class, 'getExamHTML']);
-Route::get('/getScheduleHTMLTest', [LoginController::class, 'getScheduleHTMLTest']);
-
-
-//post login
-Route::get('/postLogin', [LoginController::class, 'postLogin']);
-
-//
-Route::get('/getSessionId', [LoginController::class, 'getSessionId']);
-Route::get('/getCookie', [LoginController::class, 'getCookie']);
-Route::get('/getHTML', [LoginController::class, 'getHTML']);
-
-//controller
-Route::get('/fetchData', [Controller::class, 'fetchData']);
+//student
+Route::group(['prefix' => 'student'], function () {
+    //insert student to database
+    Route::post('/insert', [StudentController::class, 'insert']);
+    //get student by id
+    Route::get('/get/{id}', [StudentController::class, 'get']);
+    //delete
+    Route::delete('/delete/{id}', [StudentController::class, 'delete']);
+});
 
 //schedule
-Route::get('/getAllSchedule', [ScheduleController::class, 'getAllSchedule']);
-Route::get('/getExamSchedule', [ScheduleController::class, 'getExamSchedule']);
-Route::get('/getScheduleByUsername/{id}', [ScheduleController::class, 'getScheduleByUsername']);
-Route::get('/fetchSchedule/{id}', [ScheduleController::class, 'fetchSchedule']);
+Route::group(['prefix' => 'schedule'], function () {
+    //insert student to database
+    Route::post('/insert', [ScheduleController::class, 'insert']);
+    //get student by id
+    Route::get('/get/{id}', [ScheduleController::class, 'get']);
+    //delete
+    Route::delete('/delete/{id}', [ScheduleController::class, 'delete']);
+});
 
-//student
-Route::get('/getStudentByUsername/{username}', [StudentController::class, 'getStudentByUsername']);
-
-//mark
-Route::get('/getMark', [MarkController::class, 'getMark']);
-Route::get('/getSubjectMark', [MarkController::class, 'getSubjectMark']);
-Route::get('/fetchMark/{id}', [MarkController::class, 'fetchMark']);
-
-
-//tuition
-Route::get('/getTuitionPaid', [TuitionController::class, 'getTuitionPaid']);
-Route::get('/getTuitionTotalDueAmount', [TuitionController::class, 'getTuitionTotalDueAmount']);
+//term
+Route::group(['prefix' => 'term'], function () {
+    //insert student to database
+    Route::post('/insert/{id}', [TermController::class, 'insert']);
+    //get student by id
+    Route::get('/get/{id}', [TermController::class, 'get']);
+    //delete
+    Route::delete('/delete/{id}', [TermController::class, 'delete']);
+});
