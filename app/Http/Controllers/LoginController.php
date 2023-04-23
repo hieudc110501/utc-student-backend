@@ -78,7 +78,7 @@ class LoginController extends Controller
         $url = $originUrl . '/' . $this->getSessionId() . '/' . $page;
 
         $cookie = $this->getCookie($username, $password, $loginUrl);
-        $response = $client->request('GET', $url, [
+        $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
                 'Cookie' => 'SignIn='. $cookie,
@@ -151,6 +151,71 @@ class LoginController extends Controller
             ]
         ]);
         return $response->getBody();
+    }
+
+    public function getMarkHTML($username, $password, $page, $termName) {
+        $client = new Client();
+
+        $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
+        $loginUrl = $originUrl . '/' . $this->getSessionId() . '/' . 'login.aspx';
+        $url = $originUrl . '/' . $this->getSessionId() . '/' . $page;
+
+        $cookie = $this->getCookie($username, $password, $loginUrl);
+        $response = $client->request('POST', $url, [
+            'headers' => [
+                // Thêm cookie vào header của request
+                'Cookie' => 'SignIn='. $cookie,
+            ],
+        ]);
+
+        $crawler = new Crawler($response->getBody());
+        $viewstate = $crawler->filter('#__VIEWSTATE')->attr('value');
+        $eventvalidation = $crawler->filter('#__EVENTVALIDATION')->attr('value');
+        $hidFieldId = $crawler->filter('#hidFieldId')->attr('value');
+        $hidStudentId = $crawler->filter('#hidStudentId')->attr('value');
+
+        $response = $client->request('POST', $url, [
+            'headers' => [
+                // Thêm cookie vào header của request
+                'Cookie' => 'SignIn='. $cookie,
+            ],
+            'form_params' => [
+                '__EVENTTARGET' => 'drpHK',
+                '__EVENTVALIDATION' => $eventvalidation,
+                '__VIEWSTATE' => $viewstate,
+                'drpHK' => $termName,
+                'drpField' => $hidFieldId,
+                'drpFilter' => 1,
+                'hidSymbolMark' => 0,
+                'hidFieldId' => $hidFieldId,
+                'hidStudentId' => $hidStudentId,
+            ]
+        ]);
+        return $response->getBody();
+    }
+
+    public function getTermHTML($username, $password, $page) {
+        $client = new Client();
+
+        $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
+        $loginUrl = $originUrl . '/' . $this->getSessionId() . '/' . 'login.aspx';
+        $url = $originUrl . '/' . $this->getSessionId() . '/' . $page;
+
+        $cookie = $this->getCookie($username, $password, $loginUrl);
+        $response = $client->request('POST', $url, [
+            'headers' => [
+                // Thêm cookie vào header của request
+                'Cookie' => 'SignIn='. $cookie,
+            ],
+        ]);
+        $crawler = new Crawler($response->getBody());
+        $select = $crawler->filter('select[name="drpHK"]')->text();
+
+        $listOption = explode(" ", $select);
+        $list = array_filter($listOption, function($item) {
+            return strlen($item) == 11;
+        });
+        return $list;
     }
 
 }

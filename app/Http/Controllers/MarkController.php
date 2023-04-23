@@ -9,8 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class MarkController extends Controller
 {
-
-    public function parseMarkData($html) {
+    public function parseMarkData($html, $username) {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#grdResult tr')->each(function ($row, $i) {
             // extract data from the row
@@ -24,10 +23,36 @@ class MarkController extends Controller
             return $cols;
         });
         $rows = array_filter($rows);
-        return $rows;
+        foreach($rows as $row) {
+            if ($row[1] != 'Học kỳ' && $row[1] != 'Cả Năm') {
+                if ($row[0] != 'Toàn khóa') {
+                    $x = explode('_', $row[0]);
+                    $hk = substr($x[0], 2) . substr($x[1], 2) . $row[1];
+                    $check = DB::table('gpa')->insert([
+                        'studentId' => $username,
+                        'term' => $hk,
+                        'gpa10' => $row[2],
+                        'gpa4' => $row[4],
+                        'credit' => $row[12],
+                    ]);
+                } else {
+                    $check = DB::table('gpa')->insert([
+                        'studentId' => $username,
+                        'term' => $row[0],
+                        'gpa10' => $row[2],
+                        'gpa4' => $row[4],
+                        'credit' => $row[12],
+                    ]);
+                }
+                if (!$check) {
+                    return response()->json(null, 400);
+                }
+            }
+        }
+        return response()->json(null, 204);
     }
 
-    public function parseMarkSubjectData($html, $username) {
+    public function parseMarkSubjectData($html, $studentTermId) {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#tblStudentMark tr')->each(function ($row, $i) {
             // extract data from the row
@@ -43,70 +68,60 @@ class MarkController extends Controller
         $rows = array_filter($rows);
         foreach($rows as $row) {
             if ($row[0] != 'STT') {
-                $check = DB::table('module')->where('moduleId', $row[1])->get();
-                if ($check->isEmpty()) {
-                    DB::table('module')->insert([
-                        'moduleId' => $row[1],
-                        'moduleName' => $row[2],
-                        'moduleCredit' => (int)$row[3],
-                    ]);
-                    $studentModuleId = DB::table('studentModule')->insertGetId([
-                        'moduleId' => $row[1],
-                        'studentId' => $username,
-                        'times' => $row[4],
-                    ]);
-                    $index1 = 0;
-                    $index2 = 0;
-                    $index3 = 0;
-                    for ($i = 0; $i < $row[4]; $i++) {
-                        if (substr($row[10], $index1+1,1) == '.') {
-                            $dqt = substr($row[10], $index1,3);
-                            $index1 += 3;
-                        } else {
-                            $dqt = substr($row[10], $index1,2);
-                            $index1 += 2;
-                        }
-                        if (substr($row[11], $index2+1,1) == '.') {
-                            $thi = substr($row[11], $index2,3);
-                            $index2 += 3;
-                        } else {
-                            $thi = substr($row[11], $index2,2);
-                            $index2 += 2;
-                        }
-                        if (substr($row[12], $index3+1,1) == '.') {
-                            $tkhp = substr($row[12], $index3,3);
-                            $index3 += 3;
-                        } else {
-                            $tkhp = substr($row[12], $index3,2);
-                            $index3 += 2;
-                        }
-                        DB::table('times')->insert([
-                            'studentModuleId' => $studentModuleId,
-                            'DQT' => (float)$dqt,
-                            'THI' => (float)$thi,
-                            'TKHP' => (float)$tkhp,
-                        ]);
+                var_dump($row[1]);
+                $studentModuleId = DB::table('studentModule')->insertGetId([
+                    'studentTermId' => $studentTermId,
+                    'moduleId' => $row[1],
+                    'moduleName' => $row[2],
+                    'moduleCredit' => (int)$row[3],
+                    'times' => $row[4],
+                    'evaluate' => $row[8],
+                ]);
+                if (!$studentModuleId) {
+                    return response()->json(null, 400);
+                }
+                $index1 = 0;
+                $index2 = 0;
+                $index3 = 0;
+                for ($i = 0; $i < $row[4]; $i++) {
+                    if (substr($row[10], $index1+1,1) == '.') {
+                        $dqt = substr($row[10], $index1,3);
+                        $index1 += 3;
+                    } else {
+                        $dqt = substr($row[10], $index1,2);
+                        $index1 += 2;
                     }
-                } else {
-                    //kiểm tra số lần học
-                    $getTimes = $check = DB::table('studentModule')->where('moduleId', $row[1])->where('studentId', $username)->value('times');
+                    if (substr($row[11], $index2+1,1) == '.') {
+                        $thi = substr($row[11], $index2,3);
+                        $index2 += 3;
+                    } else {
+                        $thi = substr($row[11], $index2,2);
+                        $index2 += 2;
+                    }
+                    if (substr($row[12], $index3+1,1) == '.') {
+                        $tkhp = substr($row[12], $index3,3);
+                        $index3 += 3;
+                    } else {
+                        $tkhp = substr($row[12], $index3,2);
+                        $index3 += 2;
+                    }
+                    $insertTime = DB::table('times')->insert([
+                        'studentModuleId' => $studentModuleId,
+                        'DQT' => (float)$dqt,
+                        'THI' => (float)$thi,
+                        'TKHP' => (float)$tkhp,
+                    ]);
+                    if (!$insertTime) {
+                        return response()->json(null, 400);
+                    }
                 }
             }
         }
         return response()->json(null, 204);
     }
 
-    public function insert(Request $request) {
-        $login = new LoginController();
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $page = 'StudentMark.aspx';
-
-        $html = $login->getHTML($username, $password, $page);
-        return $this->parseMarkData($html);
-    }
-
-    public function getSubjectMark(Request $request) {
+    // lưu tất cả điểm của các môn học
+    public function insertAll(Request $request) {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
@@ -116,12 +131,119 @@ class MarkController extends Controller
         return $this->parseMarkSubjectData($html, $username);
     }
 
-    public function fetchMark($username) {
-        $query = "select studentmodule.moduleId, m.moduleName, m.moduleCredit , studentmodule.times, t.DQT, t.THI, t.TKHP FROM studentmodule JOIN times t ON studentmodule.studentModuleId = t.studentModuleId JOIN module m ON studentmodule.moduleId = m.moduleId WHERE studentId=$username";
-        return DB::table('module')
-        ->join('studentmodule', 'studentmodule.moduleId', '=', 'module.moduleId')
+    // lấy tất cả điểm của các môn học
+    public function getAll($username) {
+        $check = DB::table('studentmodule')
         ->join('times', 'times.studentModuleId', '=', 'studentmodule.studentModuleId')
-        ->where('studentId', '=', $username)
+        ->where('studentId', $username)
         ->get();
+        if ($check) {
+            return response()->json($check, 200);
+        } else {
+            return response()->json(null, 400);
+        }
     }
+
+    // xóa tất cả điểm của các môn học
+    public function deleteAll($username) {
+        $listTerm = DB::table('studentterm')->where('studentId', $username)->pluck('studentTermId');
+        $listModule = DB::table('studentmodule')->whereIn('studentTermId', $listTerm)->pluck('studentModuleId');
+
+        $check = DB::table('times')->whereIn('studentModuleId', $listModule)->delete();
+        $check1 = DB::table('studentmodule')->whereIn('studentTermId', $listTerm)->delete();
+        $check2 = DB::table('gpa')->where('studentId', $username)->delete();
+        if ($check && $check1 && $check2) {
+            return response()->json(null, 204);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
+
+
+    // lưu điểm theo từng kì học của từng sinh viên
+    public function insertMarkTerm(Request $request) {
+        $login = new LoginController();
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $page = 'StudentMark.aspx';
+
+        $listTerm = $this->getTerm($request);
+
+        foreach ($listTerm as $term) {
+            $html = $login->getMarkHTML($username, $password, $page, $term);
+            $studentTermId = DB::table('studentterm')->where('studentId', $username)->where('termId', $term)->value('studentTermId');
+            if ($studentTermId) {
+                $this->parseMarkSubjectData($html, $studentTermId);
+            } else {
+                $studentTermId = DB::table('studentterm')->insertGetId([
+                    'studentId' => $username,
+                    'termId' => $term,
+                ]);
+                $this->parseMarkSubjectData($html, $studentTermId);
+            }
+        }
+        return response()->json(null, 204);
+    }
+
+    // lấy ra những kì học của sinh viên
+    public function getTerm(Request $request) {
+        $login = new LoginController();
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $page = 'StudentMark.aspx';
+
+        $html = $login->getTermHTML($username, $password, $page);
+        return $html;
+    }
+
+    // lấy ra điểm môn học từng kì của sinh viên
+    public function getMarkByTerm(Request $request) {
+        $username = $request->input('username');
+        $termId = $request->input('termId');
+
+        $check = DB::table('studentterm')
+        ->join('studentmodule', 'studentmodule.studentTermId', '=', 'studentterm.studentTermId')
+        ->join('times', 'times.studentModuleId', '=', 'studentmodule.studentModuleId')
+        ->where('studentterm.studentId', $username)
+        ->where('studentterm.termId', $termId)
+        ->get();
+
+        if ($check) {
+            return response()->json($check, 200);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
+
+    // lấy ra danh sách học kì của sinh viên
+    public function getAllTerm($username) {
+        $check = DB::table('studentterm')->where('studentId', $username)->pluck('termId');
+        if ($check) {
+            return response()->json($check, 200);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
+
+    // lưu gpa của sinh viên
+    public function insertGPA(Request $request) {
+        $login = new LoginController();
+        $username = $request->input('username');
+        $password = $request->input('password');
+        $page = 'StudentMark.aspx';
+
+        $html = $login->getHTML($username, $password, $page);
+        return $this->parseMarkData($html, $username);
+    }
+
+    // lưu gpa của sinh viên
+    public function getGPA($username) {
+        $check = DB::table('gpa')->where('studentId', $username)->get();
+        if ($check) {
+            return response()->json($check, 200);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
+
 }

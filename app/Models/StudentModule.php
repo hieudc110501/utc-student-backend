@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudentModule extends Model
 {
-    protected $fillable = ['moduleId','studentId','times'];
+    protected $fillable = ['moduleId','moduleName','moduleCredit','studentId','times', 'evaluate'];
 
     protected $primarkey =  'studentModuleId';
     protected $table = 'studentModule';
