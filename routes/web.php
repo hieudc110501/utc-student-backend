@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\MarkController;
+use App\Http\Controllers\NewsController;
+use App\Http\Controllers\PointController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TermController;
+use App\Http\Controllers\TuitionController;
 use Illuminate\Support\Facades\Route;
 
 //student
@@ -24,6 +27,12 @@ Route::group(['prefix' => 'schedule'], function () {
     Route::get('/get/{id}', [ScheduleController::class, 'get']);
     //delete
     Route::delete('/delete/{id}', [ScheduleController::class, 'delete']);
+    //get exam schedule
+    Route::post('/insertExam', [ScheduleController::class, 'insertExam']);
+    //get exam schedule
+    Route::get('/getExam/{id}', [ScheduleController::class, 'getExam']);
+    //get exam schedule
+    Route::delete('/deleteExam/{id}', [ScheduleController::class, 'deleteExam']);
 });
 
 //term
@@ -57,4 +66,36 @@ Route::group(['prefix' => 'mark'], function () {
     Route::get('/getAllTerm/{id}', [MarkController::class, 'getAllTerm']);
     //get gpa
     Route::get('/getGPA/{id}', [MarkController::class, 'getGPA']);
+});
+
+//tuition
+Route::group(['prefix' => 'tuition'], function () {
+    //insert
+    Route::post('/insert', [TuitionController::class, 'insert']);
+    //get
+    Route::get('/get/{id}', [TuitionController::class, 'get']);
+    //insert
+    Route::delete('/delete/{id}', [TuitionController::class, 'delete']);
+});
+
+//point
+Route::group(['prefix' => 'point'], function () {
+    //insert
+    Route::post('/insert', [PointController::class, 'insert']);
+    //get
+    Route::get('/get/{id}', [PointController::class, 'get']);
+    //insert
+    Route::delete('/delete/{id}', [PointController::class, 'delete']);
+});
+
+//
+Route::group(['prefix' => 'news'], function () {
+    //insert
+    Route::post('/insert', [NewsController::class, 'insert']);
+    //get
+    Route::get('/get', [NewsController::class, 'get']);
+    //insert
+    Route::delete('/delete', [NewsController::class, 'delete']);
+    //get
+    Route::get('/getDetail', [NewsController::class, 'getDetail']);
 });

@@ -16,5 +16,8 @@ class VerifyCsrfToken extends Middleware
         'schedule/*',
         'term/*',
         'mark/*',
+        'tuition/*',
+        'point/*',
+        'news/*',
     ];
 }

@@ -28,10 +28,7 @@ class ScheduleController extends Controller
             return $cols;
         });
 
-        $id = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
-        if (!$id) {
-            return response()->json(null, 400);
-        }
+        $id = $username;
 
         $rows = array_filter($rows);
         unset($rows[sizeof($rows)]);
@@ -87,7 +84,7 @@ class ScheduleController extends Controller
                 $listThu = explode("Thứ", $time[1]);
                 if (sizeof($listThu) == 1) {
                     $check = DB::table('subjectdetail')->insert([
-                        'studentTermId' => $id,
+                        'studentId' => $id,
                         'subjectId' => $subjectId,
                         'subjectName' => $subjectName,
                         'startDay' => $startDay,
@@ -112,7 +109,7 @@ class ScheduleController extends Controller
                             $ca = '4';
                         }
                         $check = DB::table('subjectdetail')->insert([
-                            'studentTermId' => $id,
+                            'studentId' => $id,
                             'subjectId' => $subjectId,
                             'subjectName' => $subjectName,
                             'startDay' => $startDay,
@@ -170,7 +167,7 @@ class ScheduleController extends Controller
     }
 
     // tách lấy dữ liệu lịch thi
-    public function parseExam($html) {
+    public function parseExam($html, $username) {
         $crawler = new Crawler($html);
         // Find the select element with the name "hieu"
         //$select = $crawler->filter('select[name="drpSemester"]')->first();
@@ -189,20 +186,57 @@ class ScheduleController extends Controller
             }
             return $cols;
         });
+
         $rows = array_filter($rows);
-        return $rows;
+        foreach($rows as $row) {
+            $check = DB::table('exam')->insert([
+                'studentId' => $username,
+                'moduleId' => $row[1],
+                'moduleName' => $row[2],
+                'credit' => $row[3],
+                'date' => date("Y-m-d", strtotime(str_replace('/', '-',trim($row[4])))),
+                'lesson' => $row[5],
+                'type' => $row[6],
+                'identify' => $row[7],
+                'room' => $row[8],
+            ]);
+
+            if (!$check) {
+                return response()->json(null, 400);
+            }
+        }
+        return response()->json(null, 204);
     }
 
-    //request lấy lịch thi
-    public function getExamSchedule(Request $request) {
+    //insert lịch thi
+    public function insertExam(Request $request) {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
         $page = 'StudentViewExamList.aspx';
 
-        $termValue = DB::table('term')->where('termName', '=', '1_2022_2023')->value('termValue');
+        $termValue = DB::table('term')->where('termId', '=', '2022_2023_1')->value('termValue');
         $html = $login->getExamHTML($username, $password, $page, $termValue);
-        return $this->parseExam($html);
+        return $this->parseExam($html, $username);
     }
 
+    //delete lịch thi
+    public function deleteExam($username) {
+        $check = DB::table('exam')->where('studentId', $username)->delete();
+        if ($check) {
+            return response()->json(null, 204);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
+
+     //delete lịch thi
+     public function getExam($username) {
+        $check = DB::table('exam')->where('studentId', $username)->get();
+        if ($check) {
+            return response()->json($check, 200);
+        } else {
+            return response()->json(null, 400);
+        }
+    }
 }
