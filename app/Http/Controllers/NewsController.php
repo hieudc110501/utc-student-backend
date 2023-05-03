@@ -7,7 +7,8 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class NewsController extends Controller
 {
-    public function parseNews($html) {
+    public function parseNews($html, $username, $password) {
+        $login = new LoginController();
         $crawler = new Crawler($html);
         $rows = $crawler->filter('div.important_news div')->each(function ($row, $i) {
             if ($i === 0) {
@@ -28,12 +29,13 @@ class NewsController extends Controller
             if (preg_match($pattern, $row[0][0], $matches)) {
                 $date = $matches[0];
             }
-            $content = preg_replace($pattern, "", $row[0][0]);
-            $content = str_replace("()", "", $content);
+            $title = preg_replace($pattern, "", $row[0][0]);
+            $title = str_replace("()", "", $title);
+            $content = $this->getDetail($username, $password, $row[0][1]);
             $check = DB::table('news')->insert([
-                'content' => $content,
+                'title' => $title,
                 'date' => date("Y-m-d", strtotime(str_replace('/', '-',trim($date)))),
-                'endpoint' => $row[0][1],
+                'content' => $content,
             ]);
             if (!$check) {
                 return response()->json(null, 400);
@@ -44,15 +46,8 @@ class NewsController extends Controller
 
     public function parseNewsDetail($html) {
         $crawler = new Crawler($html);
-        $arr = array();
-        $tieude = $crawler->filter('div.tieude')->text();
-        $tomtat = $crawler->filter('div.tomtat')->text();
         $chitiet = $crawler->filter('div.chitiet')->text();
-
-        array_push($arr, $tieude);
-        array_push($arr, $tomtat);
-        array_push($arr, $chitiet);
-        return $arr;
+        return $chitiet;
     }
 
     public function insert(Request $request) {
@@ -62,7 +57,7 @@ class NewsController extends Controller
         $page = 'Home.aspx';
 
         $html = $login->getHTML($username, $password, $page);
-        return $this->parseNews($html, $username);
+        return $this->parseNews($html, $username, $password);
     }
 
     public function get() {
@@ -83,12 +78,9 @@ class NewsController extends Controller
         }
     }
 
-    public function getDetail(Request $request) {
+    public function getDetail($username, $password, $endpoint) {
         $login = new LoginController();
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $endpoint = $request->input('endpoint');
-        $page = 'HomeDetail.aspx?' . $endpoint;
+        $page = $endpoint;
 
         $html = $login->getHTML($username, $password, $page);
         return $this->parseNewsDetail($html);

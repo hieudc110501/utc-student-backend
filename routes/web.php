@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MarkController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PointController;
@@ -9,12 +10,20 @@ use App\Http\Controllers\TermController;
 use App\Http\Controllers\TuitionController;
 use Illuminate\Support\Facades\Route;
 
+//login
+Route::group(['prefix' => 'login'], function () {
+    //post login
+    Route::post('/postLogin', [LoginController::class, 'postLogin']);
+});
+
 //student
 Route::group(['prefix' => 'student'], function () {
     //insert student to database
     Route::post('/insert', [StudentController::class, 'insert']);
     //get student by id
     Route::get('/get/{id}', [StudentController::class, 'get']);
+    //get student by id
+    Route::get('/check/{id}', [StudentController::class, 'check']);
     //delete
     Route::delete('/delete/{id}', [StudentController::class, 'delete']);
 });

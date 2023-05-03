@@ -138,9 +138,10 @@ class ScheduleController extends Controller
 
         $page = 'Reports/Form/StudentTimeTable.aspx';
 
-        $termId = DB::table('studentterm')->where('studentId', $username)->value('termId');
-        $termValue = DB::table('term')->where('termId', $termId)->value('termValue');
+        //$termId = DB::table('studentterm')->where('studentId', $username)->value('termId');
+        $termValue = DB::table('term')->where('termId', '2022_2023_2')->value('termValue');
         $html = $login->getScheduleHTML($username, $password, $page, $termValue);
+        //return $html;
         return $this->parseSchedule($html, $username);
     }
 
@@ -215,7 +216,7 @@ class ScheduleController extends Controller
         $password = $request->input('password');
         $page = 'StudentViewExamList.aspx';
 
-        $termValue = DB::table('term')->where('termId', '=', '2022_2023_1')->value('termValue');
+        $termValue = DB::table('term')->where('termId', '=', '2022_2023_2')->value('termValue');
         $html = $login->getExamHTML($username, $password, $page, $termValue);
         return $this->parseExam($html, $username);
     }

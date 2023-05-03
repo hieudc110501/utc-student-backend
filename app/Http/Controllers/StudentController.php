@@ -62,7 +62,21 @@ class StudentController extends Controller
         if ($check) {
             return response()->json($check, 200);
         } else {
-            return response()->json(null, 400);
+            return response()->json(false, 400);
+        }
+    }
+
+    //check
+    public function check($username) {
+        $check = DB::table('student')->where('studentId', '=', $username)->get();
+        if ($check) {
+            if ($check->isEmpty()) {
+                return response()->json(false, 200);
+            } else {
+                return response()->json(true, 200);
+            }
+        } else {
+            return response()->json(false, 400);
         }
     }
 
