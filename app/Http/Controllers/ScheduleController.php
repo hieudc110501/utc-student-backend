@@ -147,8 +147,7 @@ class ScheduleController extends Controller
 
     //get schedule
     public function get($username) {
-        $studentTermId = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
-        $check = DB::table('subjectdetail')->where('studentTermId', $studentTermId)->get();
+        $check = DB::table('subjectdetail')->where('studentId', $username)->get();
         if ($check) {
             return response()->json($check, 200);
         } else {

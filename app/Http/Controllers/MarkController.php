@@ -135,6 +135,7 @@ class MarkController extends Controller
     public function getAll($username) {
         $check = DB::table('studentmodule')
         ->join('times', 'times.studentModuleId', '=', 'studentmodule.studentModuleId')
+        ->join('studentterm', 'studentterm.studenttermId', '=', 'studentmodule.studenttermId')
         ->where('studentId', $username)
         ->get();
         if ($check) {
