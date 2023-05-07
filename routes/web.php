@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MarkController;
 use App\Http\Controllers\NewsController;
@@ -14,6 +15,12 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'login'], function () {
     //post login
     Route::post('/postLogin', [LoginController::class, 'postLogin']);
+});
+
+//controller
+Route::group(['prefix' => 'controller'], function () {
+    //post login
+    Route::get('/deleteAll/{id}', [Controller::class, 'deleteAll']);
 });
 
 //student

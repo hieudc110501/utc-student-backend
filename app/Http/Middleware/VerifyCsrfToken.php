@@ -20,5 +20,6 @@ class VerifyCsrfToken extends Middleware
         'tuition/*',
         'point/*',
         'news/*',
+        'controller/*',
     ];
 }

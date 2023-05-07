@@ -13,7 +13,8 @@ class LoginController extends Controller
 {
 
     // post login
-    public function postLogin(Request $request) {
+    public function postLogin(Request $request)
+    {
         $client = new Client();
         $jar = new CookieJar();
         $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
@@ -22,7 +23,7 @@ class LoginController extends Controller
         $username = $request->input('username');
         $password = $request->input('password');
 
-        $response = $client->request('POST' ,$loginUrl, [
+        $response = $client->request('POST', $loginUrl, [
             'form_params' => [
                 'txtUserName' => $username,
                 'txtPassword' => md5($password),
@@ -43,7 +44,8 @@ class LoginController extends Controller
     }
 
     //get session
-    public function getSessionId() {
+    public function getSessionId()
+    {
         $headers = get_headers('https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info/Login.aspx', 1);
         $sessionId = explode('/', $headers['Location'])[2];
         return $sessionId;
@@ -55,7 +57,7 @@ class LoginController extends Controller
         $client = new Client();
         $jar = new CookieJar();
 
-        $client->request('POST' ,$loginUrl, [
+        $client->request('POST', $loginUrl, [
             'form_params' => [
                 'txtUserName' => $username,
                 'txtPassword' => md5($password),
@@ -69,7 +71,8 @@ class LoginController extends Controller
     }
 
     //get html
-    public function getHTML($username, $password, $page) {
+    public function getHTML($username, $password, $page)
+    {
         $client = new Client();
 
         $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
@@ -80,13 +83,14 @@ class LoginController extends Controller
         $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
-                'Cookie' => 'SignIn='. $cookie,
+                'Cookie' => 'SignIn=' . $cookie,
             ]
         ]);
         return $response->getBody();
     }
 
-    public function getExamHTML($username, $password, $page, $termValue) {
+    public function getExamHTML($username, $password, $page, $termValue)
+    {
         $client = new Client();
 
         $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
@@ -97,20 +101,40 @@ class LoginController extends Controller
         $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
-                'Cookie' => 'SignIn='. $cookie,
+                'Cookie' => 'SignIn=' . $cookie,
+            ],
+        ]);
+
+        $crawler = new Crawler($response->getBody());
+        $hidStudentId = $crawler->filter('#hidStudentId')->attr('value');
+        $viewstate = $crawler->filter('#__VIEWSTATE')->attr('value');
+        $eventvalidation = $crawler->filter('#__EVENTVALIDATION')->attr('value');
+        var_dump($hidStudentId);
+
+        $response = $client->request('POST', $url, [
+            'headers' => [
+                // Thêm cookie vào header của request
+                'Cookie' => 'SignIn=' . $cookie,
             ],
             'form_params' => [
                 '__EVENTTARGET' => 'drpSemester',
-                '__EVENTVALIDATION' => "/wEdADoTknsv2lp4kp4XNSjadyiub8csnTIorMPSfpUKU79Fa8zr1tijm/dVbgMI0MJ/5MgoRSoZPLBHamO4n2xGfGAWHW/isUyw6w8trNAGHDe5T/w2lIs9E7eeV2CwsZKam8yG9tEt/TDyJa1fzAdIcnRuq940A0sVd2nflhG7GplI5+8XeUh3gRTV1fmhPau35QRJEm+/71JNhmPUTYDle8ZOHzXt/wo/gAXdH61nlPtF37RzoLCMqMLjhB1fK7JOkgin1Tr6fWaJEkN00OBzDS8+0wELA3kdDn4JdbaOdxdL8whyGMVh9kITG1BDXj6a5TlE/QtRwXNHmi9bU0C06mfey7O8k7FAqL9PO1hAA4oBejLReS2jMosUKgC/eTPbuURSPXch3PO5n4Q7iWBVtTULXCwfKLoYIMsi5Vgh+NDQHqkAIA3tIFmcw4vortGlP3dNasOXpl4dRdUYqOaUC66x0qa6e0CKDbAWr4153wt/c53EkWxBXpJw7CNMnfNAU5Bbu6IY1qNTRxofYDLh6qwHEg5fyo/kW5NyhXZKYHIAy/uZonhaNE6/s4Lwvncn9AQqygea7fEd1El079dMI+BR7PbV5UytaeCakw3IEDD3SD3YPaUYo164y+npFwiWi+BkoNDL8Fzow4O3SA7djGIQanv4jOdDFZ3smhb0mDYS6T2rxEjOZ4Uyf26iVCXR5R51nDUECGa3pa1xZeiI3b/3qA9nZ7dMsRxGja+88ge382rZHRqnErLh8ovQrmTDWdyrPx6ZuzsPZyD65wCnlAtmPg8NeeOkeaVPN533ZxoaBVWOWet3vbyfbpRW9nAl+Fl21voHivU7xYLX+mWAfz4HYCQJNS6gT62lE2x/MBNdMFh8JBLrCoKMaEs4LBsPO90qkh+OC/230esp9ky36bQwA86TM7J3x6DCl0fqrhthU19qSJ8RHeMXNoZvq7dFLOW5gXTeVq5L3iqURU/GNKPJW69HfVHjxqNtBpSXdyajYQiGuPyhkmYVE7L10B+y2ClWf65pZlwSJTtA+CVVm0wi7PQysZBynTeKqZ1pA4czgHs7nD5doR9Ilon20avH5sFXr3T5Y7/s5/yEKdh2PsSxC2/XN0nAHO2olVFCV4odLXDMYv/zgs/meZjhaGPqLRsMRdvMnsEUpdIdQiYxbtjg1uzEySjeA1Pc2tLEo6eorjEttfn4WHW1+x4xjkWsEDKqXTaSpLcLZBVGEu9Q8xr+ZvsSO/y4WgYsYalzA2pS1LEDQ3BVtTJ6JH8K04gfdVs=",
-                '__VIEWSTATE' => "/wEPDwUJNTQ5MzM5MzA3D2QWAgIBD2QWHAIBD2QWDAIBDw8WAh4EVGV4dAUuSOG7hiBUSOG7kE5HIFRIw5RORyBUSU4gVFLGr+G7nE5HIMSQ4bqgSSBI4buMQ2RkAgIPZBYCZg8PFgQfAAUGVGhvw6F0HhBDYXVzZXNWYWxpZGF0aW9uaGRkAgMPEA8WBh4NRGF0YVRleHRGaWVsZAUGa3loaWV1Hg5EYXRhVmFsdWVGaWVsZAUCSUQeC18hRGF0YUJvdW5kZ2QQFQECVk4VASBBRTU2MTk2MjY5QUY0NDc2QjQyMjA2N0M5QjQyNDUwNBQrAwFnFgFmZAIEDw8WAh4ISW1hZ2VVcmwFKC9DTUNTb2Z0LklVLldlYi5JbmZvL0ltYWdlcy9Vc2VySW5mby5naWZkZAIFD2QWCAIBDw8WAh8ABR9UcsawxqFuZyBNaW5oIEhp4bq/dSgxOTEyMDM2NTkpZGQCBQ8PFgIfAAUKU2luaCB2acOqbmRkAgcPDxYCHgdWaXNpYmxlaGRkAgkPDxYCHwAFEEjhu5lwIHRpbiBuaOG6r25kZAIHDw8WAh8ABY8BxJDEg25nIGvDvSB0aGkgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZToxMHB4Ij4+PC9zcGFuPiA8YSBocmVmPSIvQ01DU29mdC5JVS5XZWIuSW5mby9TdHVkZW50Vmlld0V4YW1MaXN0LmFzcHgiPlRyYSBj4bupdSBs4buLY2ggdGhpIGPDoSBuaMOibjwvYT5kZAIDD2QWAmYPDxYCHwFoZGQCBQ9kFgJmDw8WBB8ABQZUaG/DoXQfAWhkZAIHDw8WAh8ABQkxOTEyMDM2NTlkZAIJDw8WAh8ABRRUcsawxqFuZyBNaW5oIEhp4bq/dWRkAgsPDxYCHwAFA0s2MGRkAg0PDxYCHwAFF0PDtG5nIG5naOG7hyB0aMO0bmcgdGluZGQCDw8PFgIfAAUdQ8O0bmcgbmdo4buHIHRow7RuZyB0aW4gIDYgNjBkZAIRDxAPFgYfAgUIU2VtZXN0ZXIfAwUCSWQfBGdkEBUjCzJfMjAyM18yMDI0CzFfMjAyM18yMDI0CzJfMjAyMl8yMDIzCzFfMjAyMl8yMDIzCzJfMjAyMV8yMDIyCzFfMjAyMV8yMDIyCzJfMjAyMF8yMDIxCzFfMjAyMF8yMDIxCzJfMjAxOV8yMDIwCzFfMjAxOV8yMDIwCzJfMjAxOF8yMDE5CzFfMjAxOF8yMDE5CzJfMjAxN18yMDE4CzFfMjAxN18yMDE4CzJfMjAxNl8yMDE3CzFfMjAxNl8yMDE3CzNfMjAxNV8yMDE2CzJfMjAxNV8yMDE2CzFfMjAxNV8yMDE2CzNfMjAxNF8yMDE1CzJfMjAxNF8yMDE1CzFfMjAxNF8yMDE1CzJfMjAxM18yMDE0CzFfMjAxM18yMDE0CzJfMjAxMl8yMDEzCzFfMjAxMl8yMDEzCzJfMjAxMV8yMDEyCzFfMjAxMV8yMDEyCzJfMjAxMF8yMDExCzFfMjAxMF8yMDExCzJfMjAwOV8yMDEwCzFfMjAwOV8yMDEwCzJfMjAwOF8yMDA5CzFfMjAwOF8yMDA5CzFfMjAwNl8yMDA3FSMgZjNlNWJmMzkwOWE5NGU1YWExMGVjMTEzYWY0YjJjYWQgYzIyZWVlM2YwOGI0NDdiYzhmMmI0NmI4ZDFhMTI4ZjQgOTU5RDE3MzBBNjFBNDMxQThGQTc1MjEwMzEyMzNBRUUgNzdhZWE2Mjc2MGUyNDhlZGJmZDQzOWFkYWUwYTk0NTQgOWRlMzcwMDgwMTQzNGEzOTk2NDQxNTUwYzQ0ZGQ4ZTAgMWZiZmJkYjQzMzkzNGVmNDhiNWRmMTUwZDYzYTY5MGIgZDU4ODQxMDBmM2U1NDQxY2E4YzQzNjEzOWMxOTRiODEgYmY5MGUxYmRiNjRkNDA1NGI5ZWFkYWI0ZjUwNGQ3MGQgNjA5NDQ3MkM2NjlGNERBQkE0QjM3QjBCMjRDNUZDRTIgZDBjOTdhOWY5YWU0NDA1YmE5ZDRhMTI4NGNmN2YwNDIgOWY4ZjU3NTBhNGViNDY5YjgxODEzNjNkODQxOTU2OTAgZThkYzYyNmE3OTAwNGRmZjkwZTU0ZDFiYjM5MjRlY2UgRjlDOUM0MEI3RENFNDBDQ0I4MEI1MzMzRUE2M0M1QUUgNGE0MWY2MWI1M2ZhNDAxNGJmZTlmZjljNmRmNzlhZGIgY2E1OTlkODVmMWEzNGQwOTllYWE2YjYyNDcyNmJkMzQgMmNmODVmOGUyNTY1NDU4MzkyNTgwYzhhMmMzMmRlZTQgNjEzN2YwOWI2MTE5NGQ1YWIzMzBkMzkyMzUxZTUwZmEgOGRiOGU5ODc2ZTFiNDU3NGJlMTZkMGM4YjhlYmIyOGYgZjlkYWRhMjc0Yzg3NDhjM2E5OWQzZDQ2NGFjYzIwZjEgMTQ5M2IzNzU3ZGUxNDg0Mzg1ZGUyNjA3ZGI5YmJiODEgNUI3ODEwQjU5NEI1NEU5QkI2NDBFQzMyNkM2RkVBRjIgZDY3MDYzZmRlN2NiNGZlYWJlNjY1MGIzNDAxZDgxNDggMjliNjVlMzNiYTliNDZjYzllMWYwNTM1OTI3YWMzOTcgNzkxZDEzODZkZDc3NDQ4YWI5ZjQ0Yjk2NmZhYTk5NmQgZGIyYWM3NDM4YjE4NDg1ODg4ZDdhZjEwMmY2MGMxYmEgODViMWI4ZGY5NzNhNGVhNmE3MzYzOWI0MzlhYjIzYjAgYTdiODMxOTNmYzkxNDlhNzgwZjE0NGRhMDAyN2MxYWEgOTAwMWE4ZDdlNjBmNDM1NjljNTA5N2Q1MTA1MzRhNTMgNmNmYjE1ZWExZGYxNDQ2NGFlNjVlNTc1YWUyMmI5NzIgOGY4YjY3ZDZhZTE3NDk2YjljYWYwNDM1Njg4MzQ1M2EgOWI0OWIyY2QyZmYwNDE4Njg5ZGVkYjJhZjY3NWNhYmEgNjBkYWJhODg3MjU1NGRmZTg4OGVhNzhmYTg0NmY5MzQgMDAxMDBhZDQ0OTY2NGU4YTg4NzkzNTIyMGE2YWRmMmEgNTdGMTMxNTEyM0EyNDYzOUJEQzgxRUMxMjg0NDNGNUUgYWMzZGU5ZWY4NTVhNDM5ZGIyNTVmZjA3OTA0YjZmYTEUKwMjZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2cWAQICZAITDxAPFgYfAgUGRXNOYW1lHwMFDkV4YW1TY2hlZHVsZUlkHwRnZBAVAQMtLS0VAQAUKwMBZxYBZmQCFQ8QZGQWAWZkAiUPFgIeC18hSXRlbUNvdW50ZmQCJw8PFgIfAGVkZAIpD2QWCGYPDxYCHwAFCUVtcHR5RGF0YWRkAgEPZBYCZg8PFgIfAWhkZAICD2QWAmYPDxYEHwAFBlRob8OhdB8BaGRkAgMPDxYCHwAFxAU8YSBocmVmPSIjIiBvbmNsaWNrPSJqYXZhc2NyaXB0OndpbmRvdy5wcmludCgpIj48ZGl2IHN0eWxlPSJGTE9BVDpsZWZ0Ij4JPGltZyBzcmM9Ii9DTUNTb2Z0LklVLldlYi5JbmZvL2ltYWdlcy9wcmludC5wbmciIGJvcmRlcj0iMCI+PC9kaXY+PGRpdiBzdHlsZT0iRkxPQVQ6bGVmdDtQQURESU5HLVRPUDo2cHgiPkluIHRyYW5nIG7DoHk8L2Rpdj48L2E+PGEgaHJlZj0ibWFpbHRvOj9zdWJqZWN0PUhlIHRob25nIHRob25nIHRpbiBJVSZhbXA7Ym9keT1odHRwczovL3FsZHQudXRjLmVkdS52bi9DTUNTb2Z0LklVLldlYi5JbmZvL1N0dWRlbnRWaWV3RXhhbUxpc3QuYXNweCI+PGRpdiBzdHlsZT0iRkxPQVQ6bGVmdCI+PGltZyBzcmM9Ii9DTUNTb2Z0LklVLldlYi5JbmZvL2ltYWdlcy9zZW5kZW1haWwucG5nIiAgYm9yZGVyPSIwIj48L2Rpdj48ZGl2IHN0eWxlPSJGTE9BVDpsZWZ0O1BBRERJTkctVE9QOjZweCI+R+G7rWkgZW1haWwgdHJhbmcgbsOgeTwvZGl2PjwvYT48YSBocmVmPSIjIiBvbmNsaWNrPSJqYXZhc2NyaXB0OmFkZGZhdigpIj48ZGl2IHN0eWxlPSJGTE9BVDpsZWZ0Ij48aW1nIHNyYz0iL0NNQ1NvZnQuSVUuV2ViLkluZm8vaW1hZ2VzL2FkZHRvZmF2b3JpdGVzLnBuZyIgIGJvcmRlcj0iMCI+PC9kaXY+PGRpdiBzdHlsZT0iRkxPQVQ6bGVmdDtQQURESU5HLVRPUDo2cHgiPlRow6ptIHbDoG8gxrBhIHRow61jaDwvZGl2PjwvYT5kZGSaRO56WlXHcsikFNH3ssn1fIY5/b4XqxWzOHrfoPxxNw==",
+                '__EVENTVALIDATION' => $eventvalidation,
+                "__VIEWSTATE" => $viewstate,
+                '__VIEWSTATEGENERATOR' => 'C663F6BA',
                 'drpSemester' => $termValue,
+                'PageHeader1$drpNgonNgu' => 'AE56196269AF4476B422067C9B424504',
+                'PageHeader1$hidisNotify' => 0,
+                'hidStudentId' => $hidStudentId,
+                'drpExaminationNumber' => 0,
+                'hidShowShiftEndTime' => 0,
             ],
         ]);
         return $response->getBody();
     }
 
 
-    public function getScheduleHTML($username, $password, $page, $termValue) {
+    public function getScheduleHTML($username, $password, $page, $termValue)
+    {
         $client = new Client();
 
         $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
@@ -121,7 +145,7 @@ class LoginController extends Controller
         $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
-                'Cookie' => 'SignIn='. $cookie,
+                'Cookie' => 'SignIn=' . $cookie,
             ],
         ]);
 
@@ -136,7 +160,7 @@ class LoginController extends Controller
         $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
-                'Cookie' => 'SignIn='. $cookie,
+                'Cookie' => 'SignIn=' . $cookie,
             ],
             'form_params' => [
                 '__EVENTTARGET' => 'drpSemester',
@@ -153,7 +177,8 @@ class LoginController extends Controller
         return $response->getBody();
     }
 
-    public function getMarkHTML($username, $password, $page, $termName) {
+    public function getMarkHTML($username, $password, $page, $termName)
+    {
         $client = new Client();
 
         $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
@@ -164,7 +189,7 @@ class LoginController extends Controller
         $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
-                'Cookie' => 'SignIn='. $cookie,
+                'Cookie' => 'SignIn=' . $cookie,
             ],
         ]);
 
@@ -177,7 +202,7 @@ class LoginController extends Controller
         $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
-                'Cookie' => 'SignIn='. $cookie,
+                'Cookie' => 'SignIn=' . $cookie,
             ],
             'form_params' => [
                 '__EVENTTARGET' => 'drpHK',
@@ -194,7 +219,8 @@ class LoginController extends Controller
         return $response->getBody();
     }
 
-    public function getTermHTML($username, $password, $page) {
+    public function getTermHTML($username, $password, $page)
+    {
         $client = new Client();
 
         $originUrl = 'https://qldt.utc.edu.vn/CMCSoft.IU.Web.Info';
@@ -205,19 +231,16 @@ class LoginController extends Controller
         $response = $client->request('POST', $url, [
             'headers' => [
                 // Thêm cookie vào header của request
-                'Cookie' => 'SignIn='. $cookie,
+                'Cookie' => 'SignIn=' . $cookie,
             ],
         ]);
         $crawler = new Crawler($response->getBody());
         $select = $crawler->filter('select[name="drpHK"]')->text();
 
         $listOption = explode(" ", $select);
-        $list = array_filter($listOption, function($item) {
+        $list = array_filter($listOption, function ($item) {
             return strlen($item) == 11;
         });
         return $list;
     }
-
 }
-
-?>

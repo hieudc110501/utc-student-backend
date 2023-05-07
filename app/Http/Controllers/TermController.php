@@ -22,7 +22,7 @@ class TermController extends Controller
 
     //get
     public function get($username) {
-        $check = DB::table('studentterm')->where('studentId', '=', $username)->value('studentTermId');
+        $check = DB::table('studentterm')->where('studentId', $username)->pluck('studentTermId');
         if ($check) {
             return response()->json($check, 200);
         } else {

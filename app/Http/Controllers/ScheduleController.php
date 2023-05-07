@@ -157,8 +157,7 @@ class ScheduleController extends Controller
 
     //delete schedule
     public function delete($username) {
-        $studentTermId = DB::table('studentterm')->where('studentId', $username)->value('studentTermId');
-        $check = DB::table('subjectdetail')->where('studentTermId', $studentTermId)->delete();
+        $check = DB::table('subjectdetail')->where('studentId', $username)->delete();
         if ($check) {
             return response()->json(null, 204);
         } else {
