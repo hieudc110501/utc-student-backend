@@ -72,7 +72,6 @@ class ScheduleController extends Controller
 
             // lấy thứ và tiết
             $listDay = array_filter(explode("Từ", trim($string1)));
-            //var_dump($listDay);
             $index = 0;
             foreach ($listDay as $listd) {
                 $time = explode(":", $listd);
@@ -83,17 +82,16 @@ class ScheduleController extends Controller
 
                 $listThu = explode("Thứ", $time[1]);
                 if (sizeof($listThu) == 1) {
-                    $check = DB::table('subjectdetail')->insert([
+                    $check = DB::table('schedule')->insert([
                         'studentId' => $id,
-                        'subjectId' => $subjectId,
-                        'subjectName' => $subjectName,
+                        'moduleId' => $subjectId,
+                        'moduleName' => $subjectName,
                         'startDay' => $startDay,
                         'endDay' => $endDay,
                     ]);
                     if (!$check) {
                         return response()->json(null, 400);
                     }
-                    //var_dump($subjectId . ' ' . $startDay . ' ' . $endDay . ' ' . 'null' . ' ' . 'null' . ' ' . 'null');
                 } else {
                     unset($listThu[0]);
                     foreach ($listThu as $listt) {
@@ -108,10 +106,10 @@ class ScheduleController extends Controller
                         } else if (str_contains($listTiet[1], '10,11,12')) {
                             $ca = '4';
                         }
-                        $check = DB::table('subjectdetail')->insert([
+                        $check = DB::table('schedule')->insert([
                             'studentId' => $id,
-                            'subjectId' => $subjectId,
-                            'subjectName' => $subjectName,
+                            'moduleId' => $subjectId,
+                            'moduleName' => $subjectName,
                             'startDay' => $startDay,
                             'endDay' => $endDay,
                             'weekDay' => (int) trim($listTiet[0]),
@@ -121,7 +119,6 @@ class ScheduleController extends Controller
                         if (!$check) {
                             return response()->json(null, 400);
                         }
-                        //var_dump($subjectId . ' ' . $startDay . ' ' . $endDay . ' ' . trim($listTiet[0]) . ' ' . $ca . ' ' . $array[$index]);
                     }
                 }
                 sizeof($array)-1 > $index ? $index++ : $index;
@@ -138,16 +135,14 @@ class ScheduleController extends Controller
 
         $page = 'Reports/Form/StudentTimeTable.aspx';
 
-        //$termId = DB::table('studentterm')->where('studentId', $username)->value('termId');
         $termValue = DB::table('term')->where('termId', '2022_2023_2')->value('termValue');
         $html = $login->getScheduleHTML($username, $password, $page, $termValue);
-        //return $html;
         return $this->parseSchedule($html, $username);
     }
 
     //get schedule
     public function get($username) {
-        $check = DB::table('subjectdetail')->where('studentId', $username)->get();
+        $check = DB::table('schedule')->where('studentId', $username)->get();
         if ($check) {
             return response()->json($check, 200);
         } else {
@@ -157,7 +152,7 @@ class ScheduleController extends Controller
 
     //delete schedule
     public function delete($username) {
-        $check = DB::table('subjectdetail')->where('studentId', $username)->delete();
+        $check = DB::table('schedule')->where('studentId', $username)->delete();
         if ($check) {
             return response()->json(null, 204);
         } else {

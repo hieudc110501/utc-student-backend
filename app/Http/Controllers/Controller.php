@@ -10,34 +10,27 @@ use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
-    public function fetchData(Request $request)
+    public function insertAll(Request $request)
     {
-        $login = new LoginController();
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $pageStudent = 'StudentProfileNew/HoSoSinhVien.aspx';
-        $pageSchedule = 'StudyRegister/StudyRegister.aspx';
-        $pageMark = 'StudentMark.aspx';
+        $mark = new MarkController();
+        $point = new PointController();
+        $schedule = new ScheduleController();
+        $tuition = new TuitionController();
+        $student = new StudentController();
 
-        $check = DB::table('student')->where('studentId', '=', $username)->get();
-        if ($check->isNotEmpty()) {
-            return DB::table('student')->where('studentId', '=', $username)->first();
-        } else {
-            $student = new StudentController();
-            $schedule = new ScheduleController();
-            $html = $login->getHTML($username, $password, $pageStudent);
-            $check = $student->parseStudentData($html);
+        $d6 = $student->insert($request);
+        $d3 = $schedule->insert($request);
+        $d4 = $schedule->insertExam($request);
+        $d1 = $mark->insertMarkTerm($request);
+        $d7 = $mark->insertGPA($request);
+        $d2 = $point->insert($request);
+        $d5 = $tuition->insert($request);
 
-            //schedule
-            $html1 = $login->getHTML($username, $password, $pageSchedule);
-            $check1 = $schedule->parseSchedule($html1, $username);
 
-            if ($check && $check1) {
-                return true;
-            } else {
-                return false;
-            }
+        if ($d1 && $d2 && $d3 && $d4 && $d5 && $d6 && $d7) {
+            return response()->json(true, 200);
         }
+        return  response()->json(null, 400);
     }
 
     public function deleteAll($username)

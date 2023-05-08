@@ -109,7 +109,6 @@ class LoginController extends Controller
         $hidStudentId = $crawler->filter('#hidStudentId')->attr('value');
         $viewstate = $crawler->filter('#__VIEWSTATE')->attr('value');
         $eventvalidation = $crawler->filter('#__EVENTVALIDATION')->attr('value');
-        var_dump($hidStudentId);
 
         $response = $client->request('POST', $url, [
             'headers' => [

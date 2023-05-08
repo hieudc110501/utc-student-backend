@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\DB;
 use DateTime;
+use Illuminate\Support\Carbon;
 
 class StudentController extends Controller
 {
@@ -36,6 +37,7 @@ class StudentController extends Controller
             'bornIn' => $bornIn,
             'email' => $email,
             'gender'=> $gender,
+            'updateAt'=> Carbon::now()->format('Y-m-d'),
         ]);
 
         if ($check) {

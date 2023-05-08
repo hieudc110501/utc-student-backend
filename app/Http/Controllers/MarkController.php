@@ -68,8 +68,7 @@ class MarkController extends Controller
         $rows = array_filter($rows);
         foreach($rows as $row) {
             if ($row[0] != 'STT') {
-                var_dump($row[1]);
-                $studentModuleId = DB::table('studentModule')->insertGetId([
+                $studentModuleId = DB::table('mark')->insertGetId([
                     'studentTermId' => $studentTermId,
                     'moduleId' => $row[1],
                     'moduleName' => $row[2],
@@ -105,11 +104,11 @@ class MarkController extends Controller
                         $tkhp = substr($row[12], $index3,2);
                         $index3 += 2;
                     }
-                    $insertTime = DB::table('times')->insert([
-                        'studentModuleId' => $studentModuleId,
-                        'DQT' => (float)$dqt,
-                        'THI' => (float)$thi,
-                        'TKHP' => (float)$tkhp,
+                    $insertTime = DB::table('markDetail')->insert([
+                        'markId' => $studentModuleId,
+                        'dqt' => (float)$dqt,
+                        'thi' => (float)$thi,
+                        'tkhp' => (float)$tkhp,
                     ]);
                     if (!$insertTime) {
                         return response()->json(null, 400);
@@ -133,9 +132,9 @@ class MarkController extends Controller
 
     // lấy tất cả điểm của các môn học
     public function getAll($username) {
-        $check = DB::table('studentmodule')
-        ->join('times', 'times.studentModuleId', '=', 'studentmodule.studentModuleId')
-        ->join('studentterm', 'studentterm.studenttermId', '=', 'studentmodule.studenttermId')
+        $check = DB::table('mark')
+        ->join('markDetail', 'markDetail.markId', '=', 'mark.markId')
+        ->join('studentterm', 'studentterm.studenttermId', '=', 'mark.studenttermId')
         ->where('studentId', $username)
         ->get();
         if ($check) {
@@ -148,10 +147,10 @@ class MarkController extends Controller
     // xóa tất cả điểm của các môn học
     public function deleteAll($username) {
         $listTerm = DB::table('studentterm')->where('studentId', $username)->pluck('studentTermId');
-        $listModule = DB::table('studentmodule')->whereIn('studentTermId', $listTerm)->pluck('studentModuleId');
+        $listModule = DB::table('mark')->whereIn('studentTermId', $listTerm)->pluck('markId');
 
-        $check = DB::table('times')->whereIn('studentModuleId', $listModule)->delete();
-        $check1 = DB::table('studentmodule')->whereIn('studentTermId', $listTerm)->delete();
+        $check = DB::table('markDetail')->whereIn('markId', $listModule)->delete();
+        $check1 = DB::table('mark')->whereIn('studentTermId', $listTerm)->delete();
         $check2 = DB::table('gpa')->where('studentId', $username)->delete();
         if ($check && $check1 && $check2) {
             return response()->json(null, 204);
@@ -203,8 +202,8 @@ class MarkController extends Controller
         $termId = $request->input('termId');
 
         $check = DB::table('studentterm')
-        ->join('studentmodule', 'studentmodule.studentTermId', '=', 'studentterm.studentTermId')
-        ->join('times', 'times.studentModuleId', '=', 'studentmodule.studentModuleId')
+        ->join('mark', 'mark.studentTermId', '=', 'studentterm.studentTermId')
+        ->join('markDetail', 'markDetail.markId', '=', 'mark.markId')
         ->where('studentterm.studentId', $username)
         ->where('studentterm.termId', $termId)
         ->get();

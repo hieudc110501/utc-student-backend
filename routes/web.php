@@ -19,7 +19,9 @@ Route::group(['prefix' => 'login'], function () {
 
 //controller
 Route::group(['prefix' => 'controller'], function () {
-    //post login
+    //insert all
+    Route::get('/insertAll', [Controller::class, 'insertAll']);
+    //delete all
     Route::get('/deleteAll/{id}', [Controller::class, 'deleteAll']);
 });
 
