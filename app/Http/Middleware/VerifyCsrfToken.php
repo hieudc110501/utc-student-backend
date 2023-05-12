@@ -21,5 +21,6 @@ class VerifyCsrfToken extends Middleware
         'point/*',
         'news/*',
         'controller/*',
+        'blog/*',
     ];
 }

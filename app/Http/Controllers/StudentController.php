@@ -10,7 +10,8 @@ use Illuminate\Support\Carbon;
 
 class StudentController extends Controller
 {
-    public function parseStudentData($html) {
+    public function parseStudentData($html)
+    {
         $crawler = new Crawler($html);
         $firstName = $crawler->filter('input[name=txtHoDem]')->attr('value');
         $lastName = $crawler->filter('input[name=txtTen]')->attr('value');
@@ -27,19 +28,34 @@ class StudentController extends Controller
         $date = DateTime::createFromFormat('d/m/Y', $birth);
         $date_formatted = $date->format('Y-m-d');
 
-        $check = DB::table('student')->insert([
-            'studentId' => $studentId,
-            'studentName' => $firstName . ' '. $lastName,
-            'bankAccount' => $studentBankAccount,
-            'identity' => $identityCard,
-            'birth' => $date_formatted,
-            'tel' => $tel,
-            'bornIn' => $bornIn,
-            'email' => $email,
-            'gender'=> $gender,
-            'updateAt'=> Carbon::now()->format('Y-m-d'),
-        ]);
-
+        $get = $this->get($studentId);
+        if ($get) {
+            $check = DB::table('student')->update([
+                'studentId' => $studentId,
+                'studentName' => $firstName . ' ' . $lastName,
+                'bankAccount' => $studentBankAccount,
+                'identity' => $identityCard,
+                'birth' => $date_formatted,
+                'tel' => $tel,
+                'bornIn' => $bornIn,
+                'email' => $email,
+                'gender' => $gender,
+                'updateAt' => Carbon::now()->format('Y-m-d'),
+            ]);
+        } else {
+            $check = DB::table('student')->insert([
+                'studentId' => $studentId,
+                'studentName' => $firstName . ' ' . $lastName,
+                'bankAccount' => $studentBankAccount,
+                'identity' => $identityCard,
+                'birth' => $date_formatted,
+                'tel' => $tel,
+                'bornIn' => $bornIn,
+                'email' => $email,
+                'gender' => $gender,
+                'updateAt' => Carbon::now()->format('Y-m-d'),
+            ]);
+        }
         if ($check) {
             return response()->json(null, 204);
         } else {
@@ -48,7 +64,8 @@ class StudentController extends Controller
     }
 
     //insert
-    public function insert(Request $request) {
+    public function insert(Request $request)
+    {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
@@ -59,7 +76,8 @@ class StudentController extends Controller
     }
 
     //get
-    public function get($username) {
+    public function get($username)
+    {
         $check = DB::table('student')->where('studentId', '=', $username)->first();
         if ($check) {
             return response()->json($check, 200);
@@ -69,7 +87,8 @@ class StudentController extends Controller
     }
 
     //check
-    public function check($username) {
+    public function check($username)
+    {
         $check = DB::table('student')->where('studentId', '=', $username)->get();
         if ($check) {
             if ($check->isEmpty()) {
@@ -83,7 +102,8 @@ class StudentController extends Controller
     }
 
     //delete
-    public function delete($username) {
+    public function delete($username)
+    {
         $check = DB::table('student')->where('studentId', '=', $username)->delete();
         if ($check) {
             return response()->json(null, 204);

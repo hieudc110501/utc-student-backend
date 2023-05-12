@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\MarkController;
@@ -106,7 +107,7 @@ Route::group(['prefix' => 'point'], function () {
     Route::delete('/delete/{id}', [PointController::class, 'delete']);
 });
 
-//
+//news
 Route::group(['prefix' => 'news'], function () {
     //insert
     Route::post('/insert', [NewsController::class, 'insert']);
@@ -116,4 +117,22 @@ Route::group(['prefix' => 'news'], function () {
     Route::delete('/delete', [NewsController::class, 'delete']);
     //get
     Route::get('/getDetail', [NewsController::class, 'getDetail']);
+});
+
+
+Route::group(['prefix' => 'blog'], function () {
+    //insert blog
+    Route::post('/insert/{id}', [BlogController::class, 'insert']);
+    //get all blog
+    Route::get('/getAll', [BlogController::class, 'getAll']);
+    //insert like
+    Route::post('/insertLike/{id}', [BlogController::class, 'insertLike']);
+    //delete like
+    Route::post('/deleteLike', [BlogController::class, 'deleteLike']);
+    //insert comment
+    Route::post('/insertComment/{id}', [BlogController::class, 'insertComment']);
+    //delete comment
+    Route::delete('/deleteComment/{id}', [BlogController::class, 'deleteComment']);
+    //get comment
+    Route::get('/getComment/{id}', [BlogController::class, 'getComment']);
 });
