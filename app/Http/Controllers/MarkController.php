@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 class MarkController extends Controller
 {
-    public function parseMarkData($html, $username) {
+    public function parseMarkData($html, $username)
+    {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#grdResult tr')->each(function ($row, $i) {
             // extract data from the row
@@ -23,7 +24,7 @@ class MarkController extends Controller
             return $cols;
         });
         $rows = array_filter($rows);
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             if ($row[1] != 'Học kỳ' && $row[1] != 'Cả Năm') {
                 if ($row[0] != 'Toàn khóa') {
                     $x = explode('_', $row[0]);
@@ -52,7 +53,8 @@ class MarkController extends Controller
         return response()->json(null, 204);
     }
 
-    public function parseMarkSubjectData($html, $studentTermId) {
+    public function parseMarkSubjectData($html, $studentTermId)
+    {
         $crawler = new Crawler($html);
         $rows = $crawler->filter('#tblStudentMark tr')->each(function ($row, $i) {
             // extract data from the row
@@ -66,44 +68,45 @@ class MarkController extends Controller
             return $cols;
         });
         $rows = array_filter($rows);
-        foreach($rows as $row) {
-            if ($row[0] != 'STT') {
-                $studentModuleId = DB::table('mark')->insertGetId([
-                    'studentTermId' => $studentTermId,
-                    'moduleId' => $row[1],
-                    'moduleName' => $row[2],
-                    'moduleCredit' => (int)$row[3],
-                    'times' => $row[4],
-                    'evaluate' => $row[8],
-                ]);
-                if (!$studentModuleId) {
-                    return response()->json(null, 400);
-                }
-                $index1 = 0;
-                $index2 = 0;
-                $index3 = 0;
-                for ($i = 0; $i < $row[4]; $i++) {
-                    if (substr($row[10], $index1+1,1) == '.') {
-                        $dqt = substr($row[10], $index1,3);
-                        $index1 += 3;
-                    } else {
-                        $dqt = substr($row[10], $index1,2);
-                        $index1 += 2;
+        foreach ($rows as $row) {
+            if (sizeof($row) == 13) {
+                if ($row[0] != 'STT') {
+                    $studentModuleId = DB::table('mark')->insertGetId([
+                        'studentTermId' => $studentTermId,
+                        'moduleId' => $row[1],
+                        'moduleName' => $row[2],
+                        'moduleCredit' => (int)$row[3],
+                        'times' => $row[4],
+                        'evaluate' => $row[8],
+                    ]);
+                    if (!$studentModuleId) {
+                        return response()->json(null, 400);
                     }
-                    if (substr($row[11], $index2+1,1) == '.') {
-                        $thi = substr($row[11], $index2,3);
-                        $index2 += 3;
-                    } else {
-                        $thi = substr($row[11], $index2,2);
-                        $index2 += 2;
+
+                    if ($row[10] != ' ') {
+                        if ($row[10][strlen($row[10]) - 2] == '.' && $row[4] > 1) {
+                            $dqt = substr($row[10], strlen($row[10]) - 3, strlen($row[10]));
+                        } else {
+                            $dqt = $row[10];
+                        }
                     }
-                    if (substr($row[12], $index3+1,1) == '.') {
-                        $tkhp = substr($row[12], $index3,3);
-                        $index3 += 3;
-                    } else {
-                        $tkhp = substr($row[12], $index3,2);
-                        $index3 += 2;
+
+                    if ($row[11] != ' ') {
+                        if ($row[11][strlen($row[11]) - 2] == '.' && $row[4] > 1) {
+                            $thi = substr($row[11], strlen($row[11]) - 3, strlen($row[11]));
+                        } else {
+                            $thi = $row[11];
+                        }
                     }
+
+                    if ($row[12] != ' ') {
+                        if ($row[12][strlen($row[12]) - 2] == '.' && $row[4] > 1) {
+                            $tkhp = substr($row[12], strlen($row[12]) - 3, strlen($row[12]));
+                        } else {
+                            $tkhp = $row[12];
+                        }
+                    }
+
                     $insertTime = DB::table('markDetail')->insert([
                         'markId' => $studentModuleId,
                         'dqt' => (float)$dqt,
@@ -116,11 +119,12 @@ class MarkController extends Controller
                 }
             }
         }
-        return response()->json(null, 204);
+        //return response()->json(null, 204);
     }
 
     // lưu tất cả điểm của các môn học
-    public function insertAll(Request $request) {
+    public function insertAll(Request $request)
+    {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
@@ -131,12 +135,13 @@ class MarkController extends Controller
     }
 
     // lấy tất cả điểm của các môn học
-    public function getAll($username) {
+    public function getAll($username)
+    {
         $check = DB::table('mark')
-        ->join('markDetail', 'markDetail.markId', '=', 'mark.markId')
-        ->join('studentterm', 'studentterm.studenttermId', '=', 'mark.studenttermId')
-        ->where('studentId', $username)
-        ->get();
+            ->join('markDetail', 'markDetail.markId', '=', 'mark.markId')
+            ->join('studentterm', 'studentterm.studenttermId', '=', 'mark.studenttermId')
+            ->where('studentId', $username)
+            ->get();
         if ($check) {
             return response()->json($check, 200);
         } else {
@@ -145,7 +150,8 @@ class MarkController extends Controller
     }
 
     // xóa tất cả điểm của các môn học
-    public function deleteAll($username) {
+    public function deleteAll($username)
+    {
         $listTerm = DB::table('studentterm')->where('studentId', $username)->pluck('studentTermId');
         $listModule = DB::table('mark')->whereIn('studentTermId', $listTerm)->pluck('markId');
 
@@ -161,14 +167,14 @@ class MarkController extends Controller
 
 
     // lưu điểm theo từng kì học của từng sinh viên
-    public function insertMarkTerm(Request $request) {
+    public function insertMarkTerm(Request $request)
+    {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
         $page = 'StudentMark.aspx';
 
         $listTerm = $this->getTerm($request);
-
         foreach ($listTerm as $term) {
             $html = $login->getMarkHTML($username, $password, $page, $term);
             $studentTermId = DB::table('studentterm')->where('studentId', $username)->where('termId', $term)->value('studentTermId');
@@ -186,7 +192,8 @@ class MarkController extends Controller
     }
 
     // lấy ra những kì học của sinh viên
-    public function getTerm(Request $request) {
+    public function getTerm(Request $request)
+    {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
@@ -197,16 +204,17 @@ class MarkController extends Controller
     }
 
     // lấy ra điểm môn học từng kì của sinh viên
-    public function getMarkByTerm(Request $request) {
+    public function getMarkByTerm(Request $request)
+    {
         $username = $request->input('username');
         $termId = $request->input('termId');
 
         $check = DB::table('studentterm')
-        ->join('mark', 'mark.studentTermId', '=', 'studentterm.studentTermId')
-        ->join('markDetail', 'markDetail.markId', '=', 'mark.markId')
-        ->where('studentterm.studentId', $username)
-        ->where('studentterm.termId', $termId)
-        ->get();
+            ->join('mark', 'mark.studentTermId', '=', 'studentterm.studentTermId')
+            ->join('markDetail', 'markDetail.markId', '=', 'mark.markId')
+            ->where('studentterm.studentId', $username)
+            ->where('studentterm.termId', $termId)
+            ->get();
 
         if ($check) {
             return response()->json($check, 200);
@@ -216,7 +224,8 @@ class MarkController extends Controller
     }
 
     // lấy ra danh sách học kì của sinh viên
-    public function getAllTerm($username) {
+    public function getAllTerm($username)
+    {
         $check = DB::table('studentterm')->where('studentId', $username)->pluck('termId');
         if ($check) {
             return response()->json($check, 200);
@@ -226,7 +235,8 @@ class MarkController extends Controller
     }
 
     // lưu gpa của sinh viên
-    public function insertGPA(Request $request) {
+    public function insertGPA(Request $request)
+    {
         $login = new LoginController();
         $username = $request->input('username');
         $password = $request->input('password');
@@ -237,7 +247,8 @@ class MarkController extends Controller
     }
 
     // lưu gpa của sinh viên
-    public function getGPA($username) {
+    public function getGPA($username)
+    {
         $check = DB::table('gpa')->where('studentId', $username)->get();
         if ($check) {
             return response()->json($check, 200);
@@ -245,5 +256,4 @@ class MarkController extends Controller
             return response()->json(null, 400);
         }
     }
-
 }
