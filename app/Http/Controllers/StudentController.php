@@ -10,8 +10,9 @@ use Illuminate\Support\Carbon;
 
 class StudentController extends Controller
 {
-    public function parseStudentData($html)
+    public function parseStudentData($html, $username, $sync)
     {
+
         $crawler = new Crawler($html);
         $firstName = $crawler->filter('input[name=txtHoDem]')->attr('value');
         $lastName = $crawler->filter('input[name=txtTen]')->attr('value');
@@ -28,21 +29,9 @@ class StudentController extends Controller
         $date = DateTime::createFromFormat('d/m/Y', $birth);
         $date_formatted = $date->format('Y-m-d');
 
-        $get = $this->get($studentId);
-        if ($get) {
-            $check = DB::table('student')->update([
-                'studentId' => $studentId,
-                'studentName' => $firstName . ' ' . $lastName,
-                'bankAccount' => $studentBankAccount,
-                'identity' => $identityCard,
-                'birth' => $date_formatted,
-                'tel' => $tel,
-                'bornIn' => $bornIn,
-                'email' => $email,
-                'gender' => $gender,
-                'updateAt' => Carbon::now()->format('Y-m-d'),
-            ]);
-        } else {
+
+        $get = DB::table('student')->where('studentId', '=', $username)->get();
+        if ($get->isEmpty()) {
             $check = DB::table('student')->insert([
                 'studentId' => $studentId,
                 'studentName' => $firstName . ' ' . $lastName,
@@ -54,8 +43,29 @@ class StudentController extends Controller
                 'email' => $email,
                 'gender' => $gender,
                 'updateAt' => Carbon::now()->format('Y-m-d'),
+                'sync' => $sync,
             ]);
+            if ($check) {
+                return response()->json(null, 204);
+            } else {
+                return response()->json(null, 400);
+            }
         }
+
+        $check = DB::table('student')
+        ->where('studentId', $username)
+        ->update([
+            'studentName' => $firstName . ' ' . $lastName,
+            'bankAccount' => $studentBankAccount,
+            'identity' => $identityCard,
+            'birth' => $date_formatted,
+            'tel' => $tel,
+            'bornIn' => $bornIn,
+            'email' => $email,
+            'gender' => $gender,
+            'updateAt' => Carbon::now()->format('Y-m-d'),
+            'sync' => $sync,
+        ]);
         if ($check) {
             return response()->json(null, 204);
         } else {
@@ -64,7 +74,7 @@ class StudentController extends Controller
     }
 
     //insert
-    public function insert(Request $request)
+    public function insert(Request $request, $sync)
     {
         $login = new LoginController();
         $username = $request->input('username');
@@ -72,7 +82,7 @@ class StudentController extends Controller
         $page = 'StudentProfileNew/HoSoSinhVien.aspx';
 
         $html = $login->getHTML($username, $password, $page);
-        return $this->parseStudentData($html);
+        return $this->parseStudentData($html, $username, $sync);
     }
 
     //get

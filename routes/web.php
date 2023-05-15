@@ -29,7 +29,7 @@ Route::group(['prefix' => 'controller'], function () {
 //student
 Route::group(['prefix' => 'student'], function () {
     //insert student to database
-    Route::post('/insert', [StudentController::class, 'insert']);
+    Route::post('/insert/{sync}', [StudentController::class, 'insert']);
     //get student by id
     Route::get('/get/{id}', [StudentController::class, 'get']);
     //get student by id

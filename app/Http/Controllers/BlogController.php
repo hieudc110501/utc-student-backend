@@ -23,7 +23,7 @@ class BlogController extends Controller
         ]);
 
         if ($check) {
-            return response()->json(null, 204);
+            return response()->json(true, 200);
         } else {
             return response()->json(null, 400);
         }
@@ -46,7 +46,7 @@ class BlogController extends Controller
     public function getAll()
     {
         $posts = DB::table('blog')
-            ->select('blog.*', 'student.studentName', DB::raw('(SELECT COUNT(*) FROM comments WHERE comments.blogId = blog.blogId) as comments_count'), DB::raw('(SELECT COUNT(*) FROM likes WHERE likes.blogId = blog.blogId) as likes_count'))
+            ->select('blog.*', 'student.studentName', DB::raw('(SELECT COUNT(*) FROM comments WHERE comments.blogId = blog.blogId) as commentCount'), DB::raw('(SELECT COUNT(*) FROM likes WHERE likes.blogId = blog.blogId) as likeCount'))
             ->leftJoin('student', 'student.studentId', '=', 'blog.studentId')
             ->get();
 

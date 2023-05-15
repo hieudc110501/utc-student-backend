@@ -18,7 +18,7 @@ class Controller extends BaseController
         $tuition = new TuitionController();
         $student = new StudentController();
 
-        $d6 = $student->insert($request);
+        $d6 = $student->insert($request, 0);
         $d3 = $schedule->insert($request);
         $d4 = $schedule->insertExam($request);
         $d1 = $mark->insertMarkTerm($request);
@@ -28,7 +28,10 @@ class Controller extends BaseController
 
 
         if ($d1 && $d2 && $d3 && $d4 && $d5 && $d6 && $d7) {
-            return response()->json(true, 200);
+            $check = $student->insert($request, 1);
+            if ($check) {
+                return response()->json(true, 200);
+            }
         }
         return  response()->json(null, 400);
     }
