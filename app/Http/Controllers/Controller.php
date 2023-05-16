@@ -17,6 +17,7 @@ class Controller extends BaseController
         $schedule = new ScheduleController();
         $tuition = new TuitionController();
         $student = new StudentController();
+        $news = new NewsController();
 
         $d6 = $student->insert($request, 0);
         $d3 = $schedule->insert($request);
@@ -25,9 +26,10 @@ class Controller extends BaseController
         $d7 = $mark->insertGPA($request);
         $d2 = $point->insert($request);
         $d5 = $tuition->insert($request);
+        $d8 = $news->insert($request);
 
 
-        if ($d1 && $d2 && $d3 && $d4 && $d5 && $d6 && $d7) {
+        if ($d1 && $d2 && $d3 && $d4 && $d5 && $d6 && $d7 && $d8) {
             $check = $student->insert($request, 1);
             if ($check) {
                 return response()->json(true, 200);

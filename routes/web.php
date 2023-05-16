@@ -124,11 +124,11 @@ Route::group(['prefix' => 'blog'], function () {
     //insert blog
     Route::post('/insert/{id}', [BlogController::class, 'insert']);
     //get all blog
-    Route::get('/getAll', [BlogController::class, 'getAll']);
+    Route::get('/getAll/{id}', [BlogController::class, 'getAll']);
     //insert like
     Route::post('/insertLike/{id}', [BlogController::class, 'insertLike']);
     //delete like
-    Route::post('/deleteLike', [BlogController::class, 'deleteLike']);
+    Route::post('/deleteLike/{id}', [BlogController::class, 'deleteLike']);
     //insert comment
     Route::post('/insertComment/{id}', [BlogController::class, 'insertComment']);
     //delete comment

@@ -13,12 +13,13 @@ class BlogController extends Controller
     public function insert(Request $request, $id)
     {
         $body = $request->input('body');
+        $image = $request->input('image');
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $now = Carbon::now()->format('Y-m-d H:i:s');
         $check = DB::table('blog')->insert([
             'studentId' => $id,
             'body' => $body,
-            'image' => '',
+            'image' => $image,
             'createdAt' => $now,
         ]);
 
@@ -43,11 +44,19 @@ class BlogController extends Controller
     }
 
     //get all blog
-    public function getAll()
+    public function getAll($studentId)
     {
         $posts = DB::table('blog')
-            ->select('blog.*', 'student.studentName', DB::raw('(SELECT COUNT(*) FROM comments WHERE comments.blogId = blog.blogId) as commentCount'), DB::raw('(SELECT COUNT(*) FROM likes WHERE likes.blogId = blog.blogId) as likeCount'))
+            ->select(
+                'blog.*',
+                'student.studentName',
+                DB::raw('(SELECT COUNT(*) FROM comments WHERE comments.blogId = blog.blogId) as commentCount'),
+                DB::raw('(SELECT COUNT(*) FROM likes WHERE likes.blogId = blog.blogId) as likeCount'),
+                DB::raw('(CASE WHEN EXISTS (SELECT * FROM likes WHERE likes.studentId = ? AND likes.blogId = blog.blogId) THEN true ELSE false END) as isLiked'),
+            )
             ->leftJoin('student', 'student.studentId', '=', 'blog.studentId')
+            ->orderBy('blog.createdAt', 'desc')
+            ->setBindings([$studentId])
             ->get();
 
         if ($posts) {
@@ -67,24 +76,23 @@ class BlogController extends Controller
         ]);
 
         if ($check) {
-            return response()->json(null, 204);
+            return response()->json(true, 200);
         } else {
             return response()->json(null, 400);
         }
     }
 
     //delete like
-    public function deleteLike(Request $request)
+    public function deleteLike(Request $request, $id)
     {
         $studentId = $request->input('studentId');
-        $blogId = $request->input('blogId');
         $check = DB::table('likes')
             ->where('studentId', $studentId)
-            ->where('blogId', $blogId)
+            ->where('blogId', $id)
             ->delete();
 
         if ($check) {
-            return response()->json(null, 204);
+            return response()->json(true, 200);
         } else {
             return response()->json(null, 400);
         }
