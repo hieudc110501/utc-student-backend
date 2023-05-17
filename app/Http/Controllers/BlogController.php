@@ -52,11 +52,14 @@ class BlogController extends Controller
                 'student.studentName',
                 DB::raw('(SELECT COUNT(*) FROM comments WHERE comments.blogId = blog.blogId) as commentCount'),
                 DB::raw('(SELECT COUNT(*) FROM likes WHERE likes.blogId = blog.blogId) as likeCount'),
-                DB::raw('(CASE WHEN EXISTS (SELECT * FROM likes WHERE likes.studentId = ? AND likes.blogId = blog.blogId) THEN true ELSE false END) as isLiked'),
+                DB::raw('CASE WHEN likes.blogId IS NULL THEN false ELSE true END AS isLiked'),
             )
             ->leftJoin('student', 'student.studentId', '=', 'blog.studentId')
+            ->leftJoin('likes', function ($join) use ($studentId) {
+                $join->on('blog.blogId', '=', 'likes.blogId')
+                     ->where('likes.studentId', '=', $studentId);
+            })
             ->orderBy('blog.createdAt', 'desc')
-            ->setBindings([$studentId])
             ->get();
 
         if ($posts) {
