@@ -104,7 +104,12 @@ class BlogController extends Controller
     //insert like
     public function getComment($id)
     {
-        $check = DB::table('comments')->where('blogId', $id)->get();
+        $check = DB::table('comments')
+        ->select('comments.*', 'student.studentName')
+        ->where('blogId', $id)
+        ->join('student', 'comments.studentId', '=', 'student.studentId')
+        ->orderBy('comments.createdAt', 'desc')
+        ->get();
 
         if ($check) {
             return response()->json($check, 200);
@@ -118,17 +123,19 @@ class BlogController extends Controller
     {
         $studentId = $request->input('studentId');
         $content = $request->input('content');
+        $image = $request->input('image');
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $now = Carbon::now()->format('Y-m-d H:i:s');
         $check = DB::table('comments')->insert([
             'blogId' => $id,
             'studentId' => $studentId,
             'content' => $content,
+            'image' => $image,
             'createdAt' => $now,
         ]);
 
         if ($check) {
-            return response()->json(null, 204);
+            return response()->json(true, 200);
         } else {
             return response()->json(null, 400);
         }
