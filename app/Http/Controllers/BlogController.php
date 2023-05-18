@@ -43,6 +43,30 @@ class BlogController extends Controller
         }
     }
 
+    public function update(Request $request, $id) {
+        $body = $request->input('body');
+        $studentId = $request->input('studentId');
+        $image = $request->input('image');
+        $createdAt = $request->input('createdAt');
+        date_default_timezone_set('Asia/Ho_Chi_Minh');
+        $updatedAt = Carbon::now()->format('Y-m-d H:i:s');
+        $check = DB::table('blog')
+        ->where('blogId', $id)
+        ->update([
+            'studentId' => $studentId,
+            'body' => $body,
+            'image' => $image,
+            'createdAt' => $createdAt,
+            'updatedAt' => $updatedAt,
+        ]);
+
+        if ($check) {
+            return response()->json(true, 200);
+        } else {
+            return response()->json(false, 400);
+        }
+    }
+
     //get all blog
     public function getAll($studentId)
     {
@@ -149,7 +173,7 @@ class BlogController extends Controller
             ->delete();
 
         if ($check) {
-            return response()->json(null, 204);
+            return response()->json(true, 200);
         } else {
             return response()->json(null, 400);
         }

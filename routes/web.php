@@ -125,6 +125,8 @@ Route::group(['prefix' => 'blog'], function () {
     Route::post('/insert/{id}', [BlogController::class, 'insert']);
     //get all blog
     Route::get('/getAll/{id}', [BlogController::class, 'getAll']);
+    //update blog
+    Route::post('/update/{id}', [BlogController::class, 'update']);
     //insert like
     Route::post('/insertLike/{id}', [BlogController::class, 'insertLike']);
     //delete like
@@ -132,7 +134,7 @@ Route::group(['prefix' => 'blog'], function () {
     //insert comment
     Route::post('/insertComment/{id}', [BlogController::class, 'insertComment']);
     //delete comment
-    Route::delete('/deleteComment/{id}', [BlogController::class, 'deleteComment']);
+    Route::post('/deleteComment/{id}', [BlogController::class, 'deleteComment']);
     //get comment
     Route::get('/getComment/{id}', [BlogController::class, 'getComment']);
 });
