@@ -16,7 +16,7 @@ class BlogController extends Controller
         $image = $request->input('image');
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $now = Carbon::now()->format('Y-m-d H:i:s');
-        $check = DB::table('blog')->insert([
+        $check = DB::table('blog')->insertGetId([
             'studentId' => $id,
             'body' => $body,
             'image' => $image,
@@ -24,20 +24,34 @@ class BlogController extends Controller
         ]);
 
         if ($check) {
-            return response()->json(true, 200);
+            return response()->json($check, 200);
         } else {
             return response()->json(null, 400);
         }
     }
 
     //get blog
-    public function get($id)
+    public function getAllPerson($studentId)
     {
-        $check = DB::table('blog')
-            ->where('blogId', $id)->first();
+        $post = DB::table('blog')
+            ->select(
+                'blog.*',
+                'student.studentName',
+                DB::raw('(SELECT COUNT(*) FROM comments WHERE comments.blogId = blog.blogId) as commentCount'),
+                DB::raw('(SELECT COUNT(*) FROM likes WHERE likes.blogId = blog.blogId) as likeCount'),
+                DB::raw('CASE WHEN likes.blogId IS NULL THEN false ELSE true END AS isLiked'),
+            )
+            ->leftJoin('student', 'student.studentId', '=', 'blog.studentId')
+            ->leftJoin('likes', function ($join) use ($studentId) {
+                $join->on('blog.blogId', '=', 'likes.blogId')
+                     ->where('likes.studentId', '=', $studentId);
+            })
+            ->where('blog.studentId', $studentId)
+            ->orderBy('blog.createdAt', 'desc')
+            ->get();
 
-        if ($check) {
-            return response()->json([], 200);
+        if ($post) {
+            return response()->json($post, 200);
         } else {
             return response()->json(false, 400);
         }
@@ -80,15 +94,12 @@ class BlogController extends Controller
         ->where('blogId', $id)
         ->delete();
 
-        if ($check && $deteteLike && $deteteComment) {
+        if ($check) {
             return response()->json(true, 200);
         } else {
             return response()->json(false, 400);
         }
     }
-
-
-
 
     //get all blog
     public function getAll($studentId)

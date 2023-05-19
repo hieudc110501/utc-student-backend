@@ -123,6 +123,8 @@ Route::group(['prefix' => 'news'], function () {
 Route::group(['prefix' => 'blog'], function () {
     //insert blog
     Route::post('/insert/{id}', [BlogController::class, 'insert']);
+    //insert blog
+    Route::get('/getAllPerson/{id}', [BlogController::class, 'getAllPerson']);
     //get all blog
     Route::get('/getAll/{id}', [BlogController::class, 'getAll']);
     //update blog
