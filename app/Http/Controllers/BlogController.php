@@ -67,6 +67,29 @@ class BlogController extends Controller
         }
     }
 
+    public function delete($id) {
+        $deteteLike = DB::table('likes')
+        ->where('blogId', $id)
+        ->delete();
+
+        $deteteComment = DB::table('comments')
+        ->where('blogId', $id)
+        ->delete();
+
+        $check = DB::table('blog')
+        ->where('blogId', $id)
+        ->delete();
+
+        if ($check && $deteteLike && $deteteComment) {
+            return response()->json(true, 200);
+        } else {
+            return response()->json(false, 400);
+        }
+    }
+
+
+
+
     //get all blog
     public function getAll($studentId)
     {
