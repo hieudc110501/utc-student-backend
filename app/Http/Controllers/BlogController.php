@@ -76,6 +76,7 @@ class BlogController extends Controller
             })
             ->where('blog.body', 'LIKE', '%' . $content . '%')
             ->orWhere('student.studentName', 'LIKE', '%' . $content . '%')
+            ->orWhere('student.studentId', 'LIKE', '%' . $content . '%')
             ->orderBy('blog.createdAt', 'desc')
             ->get();
 
