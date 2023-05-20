@@ -127,6 +127,8 @@ Route::group(['prefix' => 'blog'], function () {
     Route::get('/getAllPerson/{id}', [BlogController::class, 'getAllPerson']);
     //get all blog
     Route::get('/getAll/{id}', [BlogController::class, 'getAll']);
+    //get blog searh
+    Route::get('/getSearch/{id}', [BlogController::class, 'getSearch']);
     //update blog
     Route::post('/update/{id}', [BlogController::class, 'update']);
     //delete blog

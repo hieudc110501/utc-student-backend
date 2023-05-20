@@ -44,7 +44,7 @@ class BlogController extends Controller
             ->leftJoin('student', 'student.studentId', '=', 'blog.studentId')
             ->leftJoin('likes', function ($join) use ($studentId) {
                 $join->on('blog.blogId', '=', 'likes.blogId')
-                     ->where('likes.studentId', '=', $studentId);
+                    ->where('likes.studentId', '=', $studentId);
             })
             ->where('blog.studentId', $studentId)
             ->orderBy('blog.createdAt', 'desc')
@@ -57,7 +57,37 @@ class BlogController extends Controller
         }
     }
 
-    public function update(Request $request, $id) {
+    //get blog
+    public function getSearch(Request $request, $studentId)
+    {
+        $content = $request->input('content');
+        $post = DB::table('blog')
+            ->select(
+                'blog.*',
+                'student.studentName',
+                DB::raw('(SELECT COUNT(*) FROM comments WHERE comments.blogId = blog.blogId) as commentCount'),
+                DB::raw('(SELECT COUNT(*) FROM likes WHERE likes.blogId = blog.blogId) as likeCount'),
+                DB::raw('CASE WHEN likes.blogId IS NULL THEN false ELSE true END AS isLiked'),
+            )
+            ->leftJoin('student', 'student.studentId', '=', 'blog.studentId')
+            ->leftJoin('likes', function ($join) use ($studentId) {
+                $join->on('blog.blogId', '=', 'likes.blogId')
+                    ->where('likes.studentId', '=', $studentId);
+            })
+            ->where('blog.body', 'LIKE', '%' . $content . '%')
+            ->orWhere('student.studentName', 'LIKE', '%' . $content . '%')
+            ->orderBy('blog.createdAt', 'desc')
+            ->get();
+
+        if ($post) {
+            return response()->json($post, 200);
+        } else {
+            return response()->json(false, 400);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
         $body = $request->input('body');
         $studentId = $request->input('studentId');
         $image = $request->input('image');
@@ -65,14 +95,14 @@ class BlogController extends Controller
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $updatedAt = Carbon::now()->format('Y-m-d H:i:s');
         $check = DB::table('blog')
-        ->where('blogId', $id)
-        ->update([
-            'studentId' => $studentId,
-            'body' => $body,
-            'image' => $image,
-            'createdAt' => $createdAt,
-            'updatedAt' => $updatedAt,
-        ]);
+            ->where('blogId', $id)
+            ->update([
+                'studentId' => $studentId,
+                'body' => $body,
+                'image' => $image,
+                'createdAt' => $createdAt,
+                'updatedAt' => $updatedAt,
+            ]);
 
         if ($check) {
             return response()->json(true, 200);
@@ -81,18 +111,19 @@ class BlogController extends Controller
         }
     }
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $deteteLike = DB::table('likes')
-        ->where('blogId', $id)
-        ->delete();
+            ->where('blogId', $id)
+            ->delete();
 
         $deteteComment = DB::table('comments')
-        ->where('blogId', $id)
-        ->delete();
+            ->where('blogId', $id)
+            ->delete();
 
         $check = DB::table('blog')
-        ->where('blogId', $id)
-        ->delete();
+            ->where('blogId', $id)
+            ->delete();
 
         if ($check) {
             return response()->json(true, 200);
@@ -115,7 +146,7 @@ class BlogController extends Controller
             ->leftJoin('student', 'student.studentId', '=', 'blog.studentId')
             ->leftJoin('likes', function ($join) use ($studentId) {
                 $join->on('blog.blogId', '=', 'likes.blogId')
-                     ->where('likes.studentId', '=', $studentId);
+                    ->where('likes.studentId', '=', $studentId);
             })
             ->orderBy('blog.createdAt', 'desc')
             ->get();
@@ -163,11 +194,11 @@ class BlogController extends Controller
     public function getComment($id)
     {
         $check = DB::table('comments')
-        ->select('comments.*', 'student.studentName')
-        ->where('blogId', $id)
-        ->join('student', 'comments.studentId', '=', 'student.studentId')
-        ->orderBy('comments.createdAt', 'desc')
-        ->get();
+            ->select('comments.*', 'student.studentName')
+            ->where('blogId', $id)
+            ->join('student', 'comments.studentId', '=', 'student.studentId')
+            ->orderBy('comments.createdAt', 'desc')
+            ->get();
 
         if ($check) {
             return response()->json($check, 200);
