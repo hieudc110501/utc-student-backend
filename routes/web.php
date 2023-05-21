@@ -33,6 +33,8 @@ Route::group(['prefix' => 'student'], function () {
     //get student by id
     Route::get('/get/{id}', [StudentController::class, 'get']);
     //get student by id
+    Route::get('/getSync/{id}', [StudentController::class, 'getSync']);
+    //get student by id
     Route::get('/check/{id}', [StudentController::class, 'check']);
     //delete
     Route::delete('/delete/{id}', [StudentController::class, 'delete']);

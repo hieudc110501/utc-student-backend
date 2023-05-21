@@ -124,7 +124,7 @@ class ScheduleController extends Controller
                 sizeof($array)-1 > $index ? $index++ : $index;
             }
         }
-        return response()->json(null, 204);
+        return response()->json(true, 200);
     }
 
     //insert schedule
@@ -199,7 +199,7 @@ class ScheduleController extends Controller
                 return response()->json(null, 400);
             }
         }
-        return response()->json(null, 204);
+        return response()->json(true, 200);
     }
 
     //insert lịch thi

@@ -46,7 +46,7 @@ class NewsController extends Controller
                 }
             }
         }
-        return response()->json(null, 204);
+        return response()->json(true, 200);
     }
 
     public function parseNewsDetail($html)

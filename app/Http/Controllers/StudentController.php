@@ -53,25 +53,26 @@ class StudentController extends Controller
         }
 
         $check = DB::table('student')
-        ->where('studentId', $username)
-        ->update([
-            'studentName' => $firstName . ' ' . $lastName,
-            'bankAccount' => $studentBankAccount,
-            'identity' => $identityCard,
-            'birth' => $date_formatted,
-            'tel' => $tel,
-            'bornIn' => $bornIn,
-            'email' => $email,
-            'gender' => $gender,
-            'updateAt' => Carbon::now()->format('Y-m-d'),
-            'sync' => $sync,
-        ]);
+            ->where('studentId', $username)
+            ->update([
+                'studentName' => $firstName . ' ' . $lastName,
+                'bankAccount' => $studentBankAccount,
+                'identity' => $identityCard,
+                'birth' => $date_formatted,
+                'tel' => $tel,
+                'bornIn' => $bornIn,
+                'email' => $email,
+                'gender' => $gender,
+                'updateAt' => Carbon::now()->format('Y-m-d'),
+                'sync' => $sync,
+            ]);
         if ($check) {
             return response()->json(null, 204);
         } else {
             return response()->json(null, 400);
         }
     }
+
 
     //insert
     public function insert(Request $request, $sync)
@@ -93,6 +94,34 @@ class StudentController extends Controller
             return response()->json($check, 200);
         } else {
             return response()->json(false, 400);
+        }
+    }
+
+    //get
+    public function getSync($username)
+    {
+        $check = DB::table('student')->where('studentId', '=', $username)->value('sync');
+        if ($check) {
+            $sync = $check == 1 ? true : false;
+            return response()->json($sync, 200);
+        } else {
+            return response()->json(false, 400);
+        }
+    }
+
+    //get
+    public function updateSync($username, $sync)
+    {
+        $check = DB::table('student')
+            ->where('studentId', $username)
+            ->update([
+                'updateAt' => Carbon::now()->format('Y-m-d'),
+                'sync' => $sync,
+            ]);
+        if ($check) {
+            return response()->json(true, 200);
+        } else {
+            return response()->json(null, 400);
         }
     }
 

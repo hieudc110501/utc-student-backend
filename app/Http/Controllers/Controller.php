@@ -28,7 +28,6 @@ class Controller extends BaseController
         $d5 = $tuition->insert($request);
         $d8 = $news->insert($request);
 
-
         if ($d1 && $d2 && $d3 && $d4 && $d5 && $d6 && $d7 && $d8) {
             $check = $student->insert($request, 1);
             if ($check) {
@@ -44,7 +43,7 @@ class Controller extends BaseController
         $point = new PointController();
         $schedule = new ScheduleController();
         $tuition = new TuitionController();
-        //$student = new StudentController();
+        $student = new StudentController();
         $term = new TermController();
 
         $d1 = $mark->deleteAll($username);
@@ -56,7 +55,10 @@ class Controller extends BaseController
         //$d6 = $student->delete($username);
 
         if ($d1 && $d2 && $d3 && $d4 && $d5 && $d7) {
-            return response()->json(true, 200);
+            $check = $student->updateSync($username, 0);
+            if ($check) {
+                return response()->json(true, 200);
+            }
         }
         return  response()->json(null, 400);
     }
