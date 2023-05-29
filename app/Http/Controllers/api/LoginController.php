@@ -13,6 +13,8 @@ use Carbon\Carbon;
 
 class LoginController extends Controller
 {
+
+    //login and create token
     public function login(Request $request)
     {
         $tk = $request->input('ten_tai_khoan');
@@ -38,8 +40,8 @@ class LoginController extends Controller
                     $session = DB::table('token')->insert([
                         'token' => Str::random(40),
                         'refresh_token' => Str::random(40),
-                        'token_expried' => date('Y-m-d H:i:s', strtotime('+30 day')),
-                        'refresh_token_expried' => date('Y-m-d H:i:s', strtotime('+360 day')),
+                        'token_expired' => date('Y-m-d H:i:s', strtotime('+30 day')),
+                        'refresh_token_expired' => date('Y-m-d H:i:s', strtotime('+360 day')),
                         'ma_nguoi_dung' => $nguoidung->ma_nguoi_dung,
                         'created_at' => $date,
                         'updated_at' => $date,
@@ -58,5 +60,44 @@ class LoginController extends Controller
                 'message' => 'user name or password not match',
             ], 200);
         }
+    }
+
+    // logout delete token
+    public function logout(Request $request)
+    {
+        $token = $request->input('token');
+        $checkTokenIsValid = DB::table('token')->where('token', $token)->first();
+        if (!empty($checkTokenIsValid)) {
+            DB::table('token')->where('token', $token)->delete();
+        }
+        return response()->json([
+            'code' => 200,
+            'message' => 'logout success',
+        ], 200);
+    }
+
+    // refresh token
+    public function refresh_token(Request $request)
+    {
+        $token = $request->input('token');
+        $checkTokenIsValid = DB::table('token')->where('token', $token)->first();
+        if (!empty($checkTokenIsValid)) {
+            $currentDateTime = Carbon::now();
+            $tokenExpiredDateTime = Carbon::parse($checkTokenIsValid->token_expired);
+
+            if ($tokenExpiredDateTime < $currentDateTime) {
+                var_dump('referh');
+                DB::table('token')->update([
+                    'token' => Str::random(40),
+                    'refresh_token' => Str::random(40),
+                    'token_expired' => date('Y-m-d H:i:s', strtotime('+30 day')),
+                    'refresh_token_expired' => date('Y-m-d H:i:s', strtotime('+360 day'))
+                ]);
+            }
+        }
+        return response()->json([
+            'code' => 200,
+            'message' => 'refresh token success',
+        ], 200);
     }
 }
