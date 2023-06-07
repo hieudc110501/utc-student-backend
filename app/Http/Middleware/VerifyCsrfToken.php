@@ -22,5 +22,6 @@ class VerifyCsrfToken extends Middleware
         'nhatky/*',
         'thaiki/*',
         'user/*',
+        'taikhoan/*',
     ];
 }

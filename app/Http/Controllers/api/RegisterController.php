@@ -3,30 +3,32 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Models\taikhoan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+
 
 
 class RegisterController extends Controller
 {
-    public function register(Request $request) {
-        $maTK = (string) Str::uuid();
-        $maPQ = 4;
-        $tk = $request->input('ten_tai_khoan');
-        $mk = $request->input('mat_khau');
-        $date = Carbon::now('Asia/Ho_Chi_Minh');
+    public function register(Request $request)
+    {
+        $check = DB::table('taikhoan')->where('tenTaiKhoan', $request->tenTaiKhoan)->first();
+        if ($check) {
+            return response()->json(false, 200);
+        }
 
-        $insert = DB::table('TaiKhoan')->insert([
-            'ma_tai_khoan' => $maTK,
-            'ma_phan_quyen' => $maPQ,
-            'ten_tai_khoan' => $tk,
-            'mat_khau' => bcrypt($mk),
-            'created_at' => $date,
-            'updated_at' => $date,
+        $insert = taikhoan::create([
+            'maTaiKhoan' => (string) Str::uuid(),
+            'maPhanQuyen' => 4,
+            'tenTaiKhoan' => $request->tenTaiKhoan,
+            'matKhau' => bcrypt($request->matKhau),
         ]);
 
-        return response()->json($insert, 200);
+        if (empty($insert)) {
+            return response()->json(false, 401);
+        }
+        return response()->json(true, 200);
     }
 }

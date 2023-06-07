@@ -17,19 +17,16 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
-
+    protected $fillable = ['maTaiKhoan', 'maPhanQuyen', 'tenTaiKhoan', 'matKhau'];
+    protected $primaryKey =  'maTaiKhoan';
+    protected $table = 'taikhoan';
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
      */
     protected $hidden = [
-        'password',
+        'matKhau',
         'remember_token',
     ];
 
@@ -41,4 +38,13 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    public $timestamps = false;
+    public function getAuthPassword()
+    {
+        return $this->matKhau;
+    }
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['matKhau'] = bcrypt($password);
+    }
 }

@@ -12,19 +12,19 @@ class NhatKyApiController extends Controller
     //insert nhật ký
     public function insert(Request $request, $token)
     {
-        $thoi_gian = $request->input('thoi_gian');
+        $thoiGian = $request->input('thoiGian');
 
         $nguoidung = DB::table('token')->where('token', $token)->first();
         if (!empty($nguoidung)) {
             $nhatky = DB::table('nhatky')
-                ->where('ma_nguoi_dung', $nguoidung->ma_nguoi_dung)
-                ->where('thoi_gian', $thoi_gian)
+                ->where('maNguoiDung', $nguoidung->maNguoiDung)
+                ->where('thoiGian', $thoiGian)
                 ->first();
 
             if (empty($nhatky)) {
                 DB::table('nhatky')->insert([
-                    'ma_nguoi_dung' => $nguoidung->ma_nguoi_dung,
-                    'thoi_gian' => $thoi_gian,
+                    'maNguoiDung' => $nguoidung->maNguoiDung,
+                    'thoiGian' => $thoiGian,
                 ]);
                 return response()->json([
                     'code' => 200,
@@ -41,17 +41,17 @@ class NhatKyApiController extends Controller
     //delete nhật ký
     public function delete(Request $request, $token)
     {
-        $thoi_gian = $request->input('thoi_gian');
+        $thoiGian = $request->input('thoiGian');
 
         $nguoidung = DB::table('token')->where('token', $token)->first();
         if (!empty($nguoidung)) {
             $nhatky = DB::table('nhatky')
-                ->where('ma_nguoi_dung', $nguoidung->ma_nguoi_dung)
-                ->where('thoi_gian', $thoi_gian)
+                ->where('maNguoiDung', $nguoidung->maNguoiDung)
+                ->where('thoiGian', $thoiGian)
                 ->first();
 
             if (!empty($nhatky)) {
-                DB::table('nhatky')->where('ma_nhat_ky', $nhatky->ma_nhat_ky)->delete();
+                DB::table('nhatky')->where('maNhatKy', $nhatky->maNhatKy)->delete();
                 return response()->json([
                     'code' => 200,
                     'message' => 'delete nhatky success',

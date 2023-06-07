@@ -39,7 +39,7 @@ Route::group(['prefix' => 'kinhnguyet'], function () {
     //thêm kinh nguyệt
     Route::post('insert/{token}', 'App\Http\Controllers\api\KinhNguyetApiController@insert');
     //update kinh nguyệt
-    Route::put('update/{token}', 'App\Http\Controllers\api\KinhNguyetApiController@update');
+    Route::post('delete/{token}', 'App\Http\Controllers\api\KinhNguyetApiController@delete');
 });
 
 //kinh nguyệt

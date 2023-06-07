@@ -1,15 +1,7 @@
 <?php
 
-use App\Http\Controllers\CauHoiController;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\HopTestController;
-use App\Http\Controllers\KetQuaTestController;
-use App\Http\Controllers\KinhNguyetController;
-use App\Http\Controllers\NguoiDungCauTraLoi;
+use App\Http\Controllers\LoginController;
 use App\Http\Controllers\NguoiDungController;
-use App\Http\Controllers\NhatKyController;
-use App\Http\Controllers\ThaiKiController;
-use App\Http\Controllers\TVVController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +14,16 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+
+Route::get('/', [NguoiDungController::class, 'index']);
+
+
+// //câu hỏi
+Route::group(['prefix' => 'taikhoan'], function () {
+    //đăng nhập
+    Route::post('/login', [LoginController::class, 'login']);
+});
 
 // //câu hỏi
 // Route::group(['prefix' => 'cauhoi'], function () {

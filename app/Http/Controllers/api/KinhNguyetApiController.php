@@ -13,22 +13,34 @@ class KinhNguyetApiController extends Controller
     public function insert(Request $request, $token)
     {
         $tbnkn = $request->input('tbnkn');
-        $ngay_bat_dau = $request->input('ngay_bat_dau');
         $snck = $request->input('snck');
         $snct = $request->input('snct');
         $ckdn = $request->input('ckdn');
         $cknn = $request->input('cknn');
+        $ngayBatDau = $request->input('ngayBatDau');
+        $ngayKetThuc = $request->input('ngayKetThuc');
+        $ngayBatDauKinh = $request->input('ngayBatDauKinh');
+        $ngayKetThucKinh = $request->input('ngayKetThucKinh');
+        $ngayBatDauTrung = $request->input('ngayBatDauTrung');
+        $ngayKetThucTrung = $request->input('ngayKetThucTrung');
+        $trangThai = $request->input('trangThai');
 
         $nguoidung = DB::table('token')->where('token', $token)->first();
         if (!empty($nguoidung)) {
             DB::table('kinhnguyet')->insert([
-                'ma_nguoi_dung' => $nguoidung->ma_nguoi_dung,
+                'maNguoiDung' => $nguoidung->maNguoiDung,
                 'tbnkn' => $tbnkn,
-                'ngay_bat_dau' => $ngay_bat_dau,
                 'snck' => $snck,
                 'snct' => $snct,
                 'ckdn' => $ckdn,
                 'cknn' => $cknn,
+                'ngayBatDau' => $ngayBatDau,
+                'ngayKetThuc' => $ngayKetThuc,
+                'ngayBatDauKinh' => $ngayBatDauKinh,
+                'ngayKetThucKinh' => $ngayKetThucKinh,
+                'ngayBatDauTrung' => $ngayBatDauTrung,
+                'ngayKetThucTrung' => $ngayKetThucTrung,
+                'trangThai' => $trangThai,
             ]);
             return response()->json([
                 'code' => 200,
@@ -41,38 +53,18 @@ class KinhNguyetApiController extends Controller
         ], 200);
     }
 
-    //update kinh nguyệt
-    public function update(Request $request, $token)
+    //delete kinh nguyệt
+    public function delete($token)
     {
-        $tbnkn = $request->input('tbnkn');
-        $ngay_bat_dau = $request->input('ngay_bat_dau');
-        $snck = $request->input('snck');
-        $snct = $request->input('snct');
-        $ckdn = $request->input('ckdn');
-        $cknn = $request->input('cknn');
-
         $nguoidung = DB::table('token')->where('token', $token)->first();
         if (!empty($nguoidung)) {
-            $kinhnguyet = DB::table('kinhnguyet')->where('ma_nguoi_dung', $nguoidung->ma_nguoi_dung)->first();
-            if (!empty($kinhnguyet)) {
-                DB::table('kinhnguyet')->update([
-                    'tbnkn' => $tbnkn,
-                    'ngay_bat_dau' => $ngay_bat_dau,
-                    'snck' => $snck,
-                    'snct' => $snct,
-                    'ckdn' => $ckdn,
-                    'cknn' => $cknn,
-                ]);
+            $delete = DB::table('kinhnguyet')->where('maNguoiDung', $nguoidung->maNguoiDung)->delete();
+            if ($delete) {
                 return response()->json([
                     'code' => 200,
-                    'message' => 'update kinhnguyet success',
+                    'message' => 'delete kinhnguyet success',
                 ], 200);
             }
-
         }
-        return response()->json([
-            'code' => 401,
-            'message' => 'update kinhnguyet unsuccess',
-        ], 200);
     }
 }

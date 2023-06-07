@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tvv', function (Blueprint $table) {
-            $table->bigIncrements('MaTVV');
-            $table->string('TenTVV', 255);
-            $table->string('Link', 1000)->nullable();
-            $table->string('SoDienThoai', 255)->nullable();
-            $table->string('Anh', 1000)->nullable();
+        Schema::create('tuvanvien', function (Blueprint $table) {
+            $table->bigIncrements('maTvv');
+            $table->string('tenTvv', 255);
+            $table->string('linkZalo', 255);
+            $table->string('soDienThoai', 14);
+            $table->string('linkAnh', 500);
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tvv');
+        Schema::dropIfExists('tuvanvien');
     }
 };

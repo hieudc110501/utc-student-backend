@@ -10,6 +10,7 @@ class CauTraLoiApiController extends Controller
     //insert câu trả lời
     public function insert(Request $request, $token)
     {
+
     }
 
     //update câu trả lời

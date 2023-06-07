@@ -15,36 +15,34 @@ class UserController extends Controller
     //insert người dùng
     public function insert(Request $request)
     {
-        $ma_tk = $request->input('ma_tai_khoan');
-        $ten = $request->input('ten_nguoi_dung');
-        $nam_sinh = $request->input('nam_sinh');
-        $chieu_cao = $request->input('chieu_cao');
-        $can_nang = $request->input('can_nang');
+        $ma_tk = $request->input('maTaiKhoan');
+        $ten = $request->input('tenNguoiDung');
+        $namSinh = $request->input('namSinh');
+        $chieuCao = $request->input('chieuCao');
+        $canNang = $request->input('canNang');
 
-        $ma_nguoi_dung = DB::table('nguoidung')->insertGetId([
-            'ma_tai_khoan' => $ma_tk,
-            'ten_nguoi_dung' => $ten,
-            'nam_sinh' => $nam_sinh,
-            'chieu_cao' => $chieu_cao,
-            'can_nang' => $can_nang,
+        $maNguoiDung = DB::table('nguoidung')->insertGetId([
+            'maTaiKhoan' => $ma_tk,
+            'tenNguoiDung' => $ten,
+            'namSinh' => $namSinh,
+            'chieuCao' => $chieuCao,
+            'canNang' => $canNang,
         ]);
 
-        if ($ma_nguoi_dung) {
+        if ($maNguoiDung) {
             $date = Carbon::now('Asia/Ho_Chi_Minh');
             $session = DB::table('token')->insert([
                 'token' => Str::random(40),
-                'refresh_token' => Str::random(40),
-                'token_expried' => date('Y-m-d H:i:s', strtotime('+30 day')),
-                'refresh_token_expried' => date('Y-m-d H:i:s', strtotime('+360 day')),
-                'ma_nguoi_dung' => $ma_nguoi_dung,
-                'created_at' => $date,
-                'updated_at' => $date,
+                'refreshToken' => Str::random(40),
+                'tokenExpired' => date('Y-m-d H:i:s', strtotime('+30 day')),
+                'refreshTokenExpired' => date('Y-m-d H:i:s', strtotime('+360 day')),
+                'maNguoiDung' => $maNguoiDung,
             ]);
 
             if ($session) {
                 return response()->json([
                     'code' => 200,
-                    'data' => DB::table('token')->where('ma_nguoi_dung', $ma_nguoi_dung)->value('token'),
+                    'data' => DB::table('token')->where('maNguoiDung', $maNguoiDung)->value('token'),
                 ], 200);
             } else {
                 return response()->json([
@@ -62,20 +60,20 @@ class UserController extends Controller
     //update người dùng
     public function update(Request $request, $token)
     {
-        $ten = $request->input('ten_nguoi_dung');
-        $nam_sinh = $request->input('nam_sinh');
-        $chieu_cao = $request->input('chieu_cao');
-        $can_nang = $request->input('can_nang');
+        $ten = $request->input('tenNguoiDung');
+        $namSinh = $request->input('namSinh');
+        $chieuCao = $request->input('chieuCao');
+        $canNang = $request->input('canNang');
 
-        $ma_nguoi_dung = DB::table('token')->where('token', $token)->value('ma_nguoi_dung');
+        $maNguoiDung = DB::table('token')->where('token', $token)->value('maNguoiDung');
 
         $update = DB::table('nguoidung')
-            ->where('ma_nguoi_dung', $ma_nguoi_dung)
+            ->where('maNguoiDung', $maNguoiDung)
             ->update([
-                'ten_nguoi_dung' => $ten,
-                'nam_sinh' => $nam_sinh,
-                'chieu_cao' => $chieu_cao,
-                'can_nang' => $can_nang,
+                'tenNguoiDung' => $ten,
+                'namSinh' => $namSinh,
+                'chieuCao' => $chieuCao,
+                'canNang' => $canNang,
             ]);
 
         if ($update) {
